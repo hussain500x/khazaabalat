@@ -1,0 +1,73 @@
+---
+import 'bootstrap/dist/css/bootstrap.rtl.min.css';
+import '../../styles/theme.css';
+import '../../styles/admin.css';
+---
+<!doctype html>
+<html lang="ar" dir="rtl" data-bs-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>دخول اللوحة | خزعبلات</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Rakkas&family=Readex+Pro:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body style="min-height:100vh;display:grid;place-items:center;background:radial-gradient(1200px 600px at 50% -10%, var(--night-700), var(--night-900));padding:24px">
+    <main style="width:100%;max-width:400px;background:var(--night-800);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:36px 28px">
+      <div class="d-flex flex-column align-items-center text-center mb-4">
+        <span class="brand-mark" style="width:52px;height:52px;font-size:24px;margin-bottom:14px">؟</span>
+        <h1 class="font-display" style="font-size:30px;color:var(--parch-50);margin:0">خزعبلات</h1>
+        <p class="text-muted-ka" style="font-size:14px;margin-top:6px">لوحة الإدارة — تسجيل الدخول</p>
+      </div>
+      <form id="login-form" class="d-flex flex-column gap-3 text-start">
+        <div>
+          <label for="email" class="d-block mb-2" style="font-family:var(--font-heading);font-weight:600;font-size:14px;color:var(--text-secondary)">البريد الإلكتروني</label>
+          <input id="email" type="email" required autocomplete="username" class="f-input w-100" placeholder="you@example.com" />
+        </div>
+        <div>
+          <label for="password" class="d-block mb-2" style="font-family:var(--font-heading);font-weight:600;font-size:14px;color:var(--text-secondary)">كلمة المرور</label>
+          <input id="password" type="password" required autocomplete="current-password" class="f-input w-100" placeholder="••••••••" />
+        </div>
+        <div id="login-error" style="display:none;color:#DC4C4C;font-size:14px;line-height:1.6"></div>
+        <button id="login-btn" type="submit" class="btn btn-lantern rounded-3 py-3 mt-1">دخول</button>
+      </form>
+    </main>
+
+    <script>
+      import { supabase } from '../../lib/supabase';
+      const sb = supabase();
+      const form = document.getElementById('login-form') as HTMLFormElement;
+      const errEl = document.getElementById('login-error') as HTMLElement;
+      const btn = document.getElementById('login-btn') as HTMLButtonElement;
+
+      // لو المستخدم مسجّل دخول أصلًا، حوّله للوحة مباشرة
+      sb.auth.getSession().then(({ data }) => {
+        if (data.session) location.replace('/admin');
+      });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errEl.style.display = 'none';
+        btn.disabled = true;
+        btn.textContent = 'جارٍ الدخول…';
+        const email = (document.getElementById('email') as HTMLInputElement).value.trim();
+        const password = (document.getElementById('password') as HTMLInputElement).value;
+        const { error } = await sb.auth.signInWithPassword({ email, password });
+        if (error) {
+          errEl.textContent = 'تعذّر الدخول — تأكّد من البريد وكلمة المرور.';
+          errEl.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = 'دخول';
+        } else {
+          location.replace('/admin');
+        }
+      });
+    </script>
+  </body>
+</html>
