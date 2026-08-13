@@ -1,0 +1,14 @@
+---
+interface Props { level: number; verdict?: string; label?: string; }
+const { level, verdict, label } = Astro.props;
+const lamps = Array.from({ length: 5 }, (_, i) => i < level);
+---
+<div class="d-inline-flex flex-column align-items-start gap-2">
+  {label && <span class="overline" style="font-size:12px">{label}</span>}
+  <div class="meter">
+    {verdict && <span class="meter__verdict">{verdict}</span>}
+    <span class="meter__lamps">
+      {lamps.map((on) => <span class={on ? 'lamp lit' : 'lamp'}></span>)}
+    </span>
+  </div>
+</div>

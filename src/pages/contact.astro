@@ -1,0 +1,58 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { TELEGRAM_URL } from '../data/site';
+---
+<Base title="اتصل بنا | خزعبلات" description="تواصل مع فريق خزعبلات — اقترح خزعبلة، صحّح معلومة، أو انضمّ إلينا عبر تلجرام.">
+  <Header />
+  <PageHeader title="اتصل بنا" subtitle="عندك خزعبلة تبينا نفنّدها؟ أو ملاحظة أو تصحيح؟ نسمع منك." />
+
+  <section class="section container-ka">
+    <div class="row g-4 align-items-start">
+      <!-- النموذج (يمين) -->
+      <div class="col-lg-7 order-1">
+        <form class="p-4 p-md-5 text-start" style="background:var(--night-700);border:1px solid var(--border-subtle);border-radius:var(--radius-lg)" onsubmit="return false">
+          <div class="mb-3">
+            <label for="c-name" class="d-block mb-2" style="font-family:var(--font-heading);font-weight:600;font-size:14px;color:var(--text-secondary)">الاسم</label>
+            <input id="c-name" type="text" placeholder="اسمك" class="w-100" style="background:var(--night-800);border:1px solid var(--border-subtle);border-radius:9px;color:var(--parch-50);padding:12px 14px;font-family:var(--font-body)" />
+          </div>
+          <div class="mb-3">
+            <label for="c-email" class="d-block mb-2" style="font-family:var(--font-heading);font-weight:600;font-size:14px;color:var(--text-secondary)">البريد الإلكتروني</label>
+            <input id="c-email" type="email" placeholder="you@example.com" class="w-100" style="background:var(--night-800);border:1px solid var(--border-subtle);border-radius:9px;color:var(--parch-50);padding:12px 14px;font-family:var(--font-body)" />
+          </div>
+          <div class="mb-4">
+            <label for="c-message" class="d-block mb-2" style="font-family:var(--font-heading);font-weight:600;font-size:14px;color:var(--text-secondary)">رسالتك</label>
+            <textarea id="c-message" rows="5" placeholder="اكتب خزعبلتك أو ملاحظتك…" class="w-100" style="background:var(--night-800);border:1px solid var(--border-subtle);border-radius:9px;color:var(--parch-50);padding:12px 14px;font-family:var(--font-body);resize:vertical"></textarea>
+          </div>
+          <button type="submit" class="btn btn-lantern rounded-3 px-4 py-3">إرسال الرسالة</button>
+        </form>
+      </div>
+
+      <!-- وسائل التواصل (يسار) -->
+      <div class="col-lg-5 order-2">
+        <a href={TELEGRAM_URL} target="_blank" rel="noopener" class="d-flex align-items-center gap-3 p-4 mb-3 text-start" style="background:var(--night-700);border:1px solid var(--border-subtle);border-radius:var(--radius-md)">
+          <span style="width:46px;height:46px;border-radius:12px;background:rgba(42,171,238,.16);display:grid;place-items:center;flex-shrink:0">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="#2AABEE"><path d="M22 3 L2 11 L9 13 L11 20 L14 16 L18 19 Z"/></svg>
+          </span>
+          <span>
+            <span class="d-block" style="font-family:var(--font-heading);font-weight:700;color:var(--parch-50)">قناة تلجرام</span>
+            <span class="text-muted-ka" style="font-size:14px">@khazaabalat — أسرع طريقة للوصول إلينا</span>
+          </span>
+        </a>
+        <a href="mailto:hello@khazaabalat.com" class="d-flex align-items-center gap-3 p-4 text-start" style="background:var(--night-700);border:1px solid var(--border-subtle);border-radius:var(--radius-md)">
+          <span style="width:46px;height:46px;border-radius:12px;background:rgba(231,178,75,.16);display:grid;place-items:center;flex-shrink:0">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--lantern-500)" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6" stroke-linecap="round"/></svg>
+          </span>
+          <span>
+            <span class="d-block" style="font-family:var(--font-heading);font-weight:700;color:var(--parch-50)">البريد الإلكتروني</span>
+            <span class="text-muted-ka" style="font-size:14px">hello@khazaabalat.com</span>
+          </span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <Footer />
+</Base>

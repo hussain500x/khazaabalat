@@ -1,0 +1,52 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+import { articles } from '../data/site';
+
+const popular = ['العين', 'أم الدويس', 'الرقم 4', 'امسك الخشب', 'السعلوة', 'الحسد'];
+const query = 'العين';
+---
+<Base title="بحث | خزعبلات" description="ابحث في خزعبلات — جِد الخرافات والأساطير والطرائف وغرائب العالم التي تبحث عنها.">
+  <Header />
+
+  <section class="section container-ka">
+    <div class="text-center mx-auto" style="max-width:640px">
+      <h1 class="font-display" style="font-size:clamp(32px,5vw,48px);color:var(--parch-50)">ابحث في الخزعبلات</h1>
+      <p class="text-secondary-ka mt-2">دوّر عن خرافة، حكاية، أو غريبة — واكتشف الحقيقة وراها.</p>
+
+      <form class="mt-4" onsubmit="return false">
+        <div class="d-flex align-items-center gap-2 px-3" style="background:var(--night-700);border:1px solid var(--border-strong);border-radius:14px;height:60px">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lantern-500)" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4" stroke-linecap="round"/></svg>
+          <input type="search" value={query} placeholder="اكتب كلمة البحث…" class="flex-grow-1" style="background:transparent;border:none;outline:none;color:var(--parch-50);font-family:var(--font-body);font-size:17px" />
+        </div>
+      </form>
+
+      <div class="d-flex flex-wrap gap-2 justify-content-center mt-3">
+        <span class="text-muted-ka" style="font-size:13px;align-self:center">بحث شائع:</span>
+        {popular.map((p) => (
+          <a href="/search" class="rounded-pill px-3 py-1" style="background:var(--night-700);border:1px solid var(--border-subtle);color:var(--text-secondary);font-family:var(--font-heading);font-weight:500;font-size:13px;text-decoration:none">{p}</a>
+        ))}
+      </div>
+    </div>
+
+    <!-- النتائج -->
+    <div class="d-flex justify-content-between align-items-center mt-5 mb-4 text-start" data-reveal>
+      <a href="/articles" class="text-accent" style="font-family:var(--font-heading);font-weight:600">تصفّح الأرشيف ›</a>
+      <h2 style="font-size:22px;margin:0">نتائج عن «{query}» <span class="text-muted-ka" style="font-size:16px">(3)</span></h2>
+    </div>
+    <div class="row g-4">
+      {articles.map((a, i) => (
+        <div class="col-12 col-md-6 col-lg-4" data-reveal style={`--reveal-delay:${i * 0.1}s`}><ArticleCard a={a} /></div>
+      ))}
+    </div>
+
+    <!-- حالة فارغة (مرجعية) -->
+    <div class="text-center mt-5 pt-4" style="border-top:1px dashed var(--border-subtle)">
+      <p class="text-muted-ka mb-0" style="font-size:14px">مثال على نتيجة فارغة: «ما لقينا ولا خزعبلة بهذا الاسم… جرّب كلمة ثانية.» 😅</p>
+    </div>
+  </section>
+
+  <Footer />
+</Base>

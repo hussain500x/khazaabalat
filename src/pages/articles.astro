@@ -1,0 +1,80 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { CAT, type CatSlug } from '../data/site';
+
+const months = [
+  {
+    m: 'أغسطس 2026',
+    items: [
+      ['هل صحيح أن العين تكسر الحجر؟', 'myths', '12 أغسطس', '5 دقائق'],
+      ['أم الدويس: أشهر قصة مخيفة في الخليج', 'legends', '11 أغسطس', '6 دقائق'],
+      ['لماذا يخاف اليابانيون من الرقم 4؟', 'world', '9 أغسطس', '4 دقائق'],
+      ['نصائح الواتساب الطبية: دليل ساخر', 'satire', '7 أغسطس', '3 دقائق'],
+      ['لماذا نقول «امسك الخشب»؟', 'myths', '4 أغسطس', '5 دقائق'],
+    ],
+  },
+  {
+    m: 'يوليو 2026',
+    items: [
+      ['السعلوة: من الصحراء إلى مواقع التواصل', 'legends', '28 يوليو', '6 دقائق'],
+      ['طقس كسر الصحون في اليونان', 'world', '24 يوليو', '4 دقائق'],
+      ['هل الملح يطرد الحسد؟', 'myths', '19 يوليو', '5 دقائق'],
+    ],
+  },
+];
+const filters = [
+  { t: 'الكل', h: '/articles', active: true },
+  { t: CAT.myths.short, h: '/category/myths', color: CAT.myths.color },
+  { t: CAT.legends.short, h: '/category/legends', color: CAT.legends.color },
+  { t: CAT.satire.short, h: '/category/satire', color: CAT.satire.color },
+  { t: CAT.world.short, h: '/category/world', color: CAT.world.color },
+];
+---
+<Base title="الأرشيف — كل الخزعبلات | خزعبلات" description="أرشيف كل الخزعبلات مرتّبًا زمنيًا — تصفّح الخرافات والأساطير والسخرية وغرائب العالم، أو فلتر حسب الباب.">
+  <Header />
+  <PageHeader title="كل الخزعبلات" subtitle="أرشيف كامل مرتّب زمنياً — تصفّح أو فلتر حسب الباب." />
+
+  <section class="section container-ka">
+    <div class="row g-4">
+      <!-- القائمة (يمين) -->
+      <div class="col-lg-8">
+        {months.map((mo) => (
+          <div class="mb-4" data-reveal>
+            <h2 class="text-start" style="font-size:20px;color:var(--lantern-500);font-family:var(--font-heading)">{mo.m}</h2>
+            <div class="d-flex flex-column gap-2 mt-3">
+              {mo.items.map(([title, cat, date, rt]) => (
+                <a href="/article" class="d-flex justify-content-between align-items-center gap-3 p-3 text-start" style="background:var(--night-700);border:1px solid var(--border-subtle);border-radius:10px">
+                  <span class="d-flex align-items-center gap-2" style="min-width:0">
+                    <span class="badge-cat" style={`background:${CAT[cat as CatSlug].color};flex-shrink:0`}>{CAT[cat as CatSlug].name}</span>
+                    <span style="color:var(--parch-50);font-family:var(--font-heading);font-weight:600;font-size:16px">{title}</span>
+                  </span>
+                  <span class="text-muted-ka" style="font-size:13px;white-space:nowrap">{date} · {rt}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <!-- الفلاتر (يسار) -->
+      <div class="col-lg-4">
+        <div class="p-4" style="background:var(--night-700);border:1px solid var(--border-subtle);border-radius:var(--radius-md);position:sticky;top:96px">
+          <div class="footer-head mb-3">فلترة حسب الباب</div>
+          <div class="d-flex flex-column gap-2">
+            {filters.map((f) => (
+              <a href={f.h} class="d-flex align-items-center gap-2 p-2 rounded-3" style={`text-decoration:none;${f.active ? 'background:var(--night-600)' : ''}`}>
+                {f.color && <span style={`width:9px;height:9px;border-radius:50%;background:${f.color}`}></span>}
+                <span style={`font-family:var(--font-heading);font-weight:600;font-size:15px;color:${f.active ? 'var(--lantern-500)' : 'var(--text-secondary)'}`}>{f.t}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Footer />
+</Base>

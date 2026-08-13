@@ -1,0 +1,22 @@
+---
+import type { Article } from '../data/site';
+interface Props { a: Article }
+const { a } = Astro.props;
+const dots = Array.from({ length: 5 }, (_, i) => i < a.level);
+---
+<article class="article-card" style={`--door:${a.color}`}>
+  <div class="article-card__img" style={`background:linear-gradient(135deg, color-mix(in srgb, ${a.color} 55%, var(--night-700)), var(--night-900))`}>
+    <span class="badge-cat position-absolute" style={`top:16px; inset-inline-end:16px; background:${a.color}`}>{a.cat}</span>
+  </div>
+  <div class="p-3 text-start d-flex flex-column h-100" style="gap:12px">
+    <h3 class="article-card__title">{a.title}</h3>
+    <p class="text-secondary-ka" style="font-size:15px;line-height:1.7;margin:0">{a.dek}</p>
+    <div class="mini-meter mt-auto">
+      {dots.map((on) => <i class={on ? 'on' : ''}></i>)}
+    </div>
+    <div class="d-flex justify-content-between align-items-center text-muted-ka" style="font-size:13px">
+      <span>{a.readingTime}</span>
+      <span>{a.date}</span>
+    </div>
+  </div>
+</article>

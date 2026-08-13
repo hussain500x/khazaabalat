@@ -1,0 +1,54 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import PageHeader from '../components/PageHeader.astro';
+import TelegramCTA from '../components/TelegramCTA.astro';
+
+const values = [
+  ['نحترم الموروث', 'نتعامل مع الحكايات الشعبية بمحبة، لا بازدراء — والتفنيد يكون بالمعلومة لا بالتقليل من الناس.'],
+  ['نفصل الرواية عن الحقيقة', 'نعرض ما يقوله الناس بأمانة، ثم نضعه تحت الضوء ونقول لك الحكم بوضوح.'],
+  ['نسخر من الفكرة لا من الأشخاص', 'خفّة الدم جزء من هويتنا، لكن لا نمسّ الأديان ولا الثوابت ولا الأشخاص.'],
+  ['الشفافية والمصادر', 'كل تفنيد يستند إلى مصادر حقيقية ظاهرة، وإذا أخطأنا نصحّح علناً.'],
+];
+---
+<Base title="من نحن | خزعبلات" description="من نحن — فريق خزعبلات نحكي الخرافة أو الأسطورة أو الطرفة الشعبية، ونتحقّق منها بمنهجية، ونقول لك الحقيقة بأسلوب مبسّط وممتع.">
+  <Header />
+  <PageHeader title="من نحن" subtitle="خزعبلات موقعٌ عربي يجمع الغموض والشعبيات والفكاهة في هوية واحدة — نحكي الخزعبلة، ثم نقول لك الحقيقة، وأنت تضحك في الطريق." />
+
+  <section class="section container-ka">
+    <div class="mx-auto text-start" style="max-width:760px">
+      <p style="color:var(--text-secondary);font-size:18px;line-height:2">
+        الاسم مشتقٌّ من معنيين نلعب عليهما عمداً: الأحاديث الباطلة والاعتقادات الواهية التي لا أصل لها، والكلام الهزلي المضحك. من هنا وُلدت فكرة الموقع: نأخذ ما يتناقله الناس بثقة — خرافة، أسطورة، أو إشاعة — ونتتبّع أصلها بهدوء، ثم نفصل ما ثبت عمّا اختُلق، بأسلوب مبسّط وممتع.
+      </p>
+      <p style="color:var(--text-secondary);font-size:18px;line-height:2">
+        هدفنا أن تخرج من كل مقال وقد تسلّيت وعرفت شيئاً جديداً في آنٍ واحد. لا نسخر من الناس ولا من معتقداتهم، بل نسخر من الخزعبلة نفسها — والفرق بينهما هو كل شيء.
+      </p>
+    </div>
+
+    <h2 class="text-start mt-5 mb-4" style="font-size:clamp(24px,4vw,32px)">قيمنا</h2>
+    <div class="row g-4">
+      {values.map(([t, d], i) => (
+        <div class="col-12 col-md-6" data-reveal style={`--reveal-delay:${i * 0.08}s`}>
+          <div class="p-4 h-100 text-start" style="background:var(--night-700);border:1px solid var(--border-subtle);border-radius:var(--radius-md)">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <span style="width:8px;height:8px;background:var(--lantern-500);transform:rotate(45deg);display:inline-block"></span>
+              <h3 style="font-family:var(--font-heading);font-weight:700;font-size:19px;color:var(--parch-50);margin:0">{t}</h3>
+            </div>
+            <p class="text-secondary-ka mb-0" style="line-height:1.8">{d}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div class="mx-auto text-start mt-5" style="max-width:760px">
+      <p style="color:var(--text-secondary);font-size:17px;line-height:1.9">
+        نكتب محتوانا بإشراف تحريري بشري، ونتحقّق من كل معلومة قبل نشرها. تعرّف على طريقتنا بالتفصيل في صفحة
+        <a class="text-accent" href="/methodology">منهجيتنا في التحقّق</a>.
+      </p>
+    </div>
+  </section>
+
+  <TelegramCTA />
+  <Footer />
+</Base>

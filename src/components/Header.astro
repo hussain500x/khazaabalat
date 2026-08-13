@@ -1,0 +1,58 @@
+---
+import { TELEGRAM_URL } from '../data/site';
+const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
+const nav = [
+  { t: 'المجهر', h: '/category/myths' },
+  { t: 'الحكاية', h: '/category/legends' },
+  { t: 'الضحكة', h: '/category/satire' },
+  { t: 'الرحلة', h: '/category/world' },
+];
+const isActive = (h: string) => path === h;
+---
+<header class="site-header">
+  <div class="container-ka d-flex align-items-center justify-content-between" style="height:76px">
+    <!-- يمين: الشعار + التصنيفات -->
+    <div class="d-flex align-items-center gap-4">
+      <a class="d-flex align-items-center gap-2" href="/">
+        <span class="brand-mark">؟</span>
+        <span class="font-display" style="font-size:30px;color:var(--parch-50)">خزعبلات</span>
+      </a>
+      <nav class="d-none d-md-flex gap-4">
+        {nav.map((c) => <a class:list={['nav-link-ka', { active: isActive(c.h) }]} href={c.h}>{c.t}</a>)}
+      </nav>
+    </div>
+    <!-- يسار: بحث + تلجرام + برجر -->
+    <div class="d-flex align-items-center gap-3">
+      <a href="/search" class="btn rounded-circle d-inline-grid" style="width:40px;height:40px;place-items:center;background:var(--night-700);border:1px solid var(--border-subtle)" aria-label="بحث">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--parch-300)" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4" stroke-linecap="round"/></svg>
+      </a>
+      <a class="btn btn-tg rounded-pill px-3 py-2 d-none d-md-inline-flex align-items-center gap-2" href={TELEGRAM_URL} target="_blank" rel="noopener">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M22 3 L2 11 L9 13 L11 20 L14 16 L18 19 Z"/></svg>
+        تلجرام
+      </a>
+      <button class="mobile-toggle d-md-none" aria-label="القائمة" aria-expanded="false">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--parch-300)" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- قائمة الجوال -->
+  <nav class="mobile-menu d-md-none" id="mobileMenu">
+    <div class="container-ka">
+      {nav.map((c) => <a class:list={[{ active: isActive(c.h) }]} href={c.h}>{c.t}</a>)}
+      <a href={TELEGRAM_URL} target="_blank" rel="noopener" style="color:var(--tg)">تلجرام — انضم للقناة</a>
+    </div>
+  </nav>
+</header>
+
+<script>
+  const btn = document.querySelector('.mobile-toggle');
+  const menu = document.getElementById('mobileMenu');
+  if (btn && menu) {
+    btn.addEventListener('click', () => {
+      const open = menu.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    menu.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => menu.classList.remove('open')));
+  }
+</script>

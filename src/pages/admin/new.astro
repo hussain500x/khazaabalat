@@ -1,0 +1,128 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+
+const doors = [
+  ['باب المجهر', '#3FB8A0', true],
+  ['باب الحكاية', '#7B5CD6', false],
+  ['باب الضحكة', '#E2603F', false],
+  ['باب الرحلة', '#E7B24B', false],
+];
+const status = [['مجدول', false], ['منشور', false], ['مسودة', true]];
+const tools = ['قائمة', 'رابط', 'صورة', 'اقتباس', 'عنوان فرعي', 'عريض'];
+---
+<AdminLayout title="مقال جديد | خزعبلات" active="content" pageTitle="مقال جديد" subtitle="املأ الحقول ثم احفظ أو انشر">
+  <button slot="actions" class="btn rounded-3 px-4 py-2" style="border:1px solid var(--border-strong);color:var(--text-secondary);font-family:var(--font-heading);font-weight:600;background:transparent">حفظ كمسودة</button>
+  <button slot="actions" class="btn btn-lantern rounded-3 px-4 py-2">نشر</button>
+
+  <div class="row g-4">
+    <!-- العمود الرئيسي (يمين) -->
+    <div class="col-lg-8">
+      <div class="field mb-3">
+        <label>عنوان المقال</label>
+        <input class="f-input" style="font-family:var(--font-heading);font-weight:700;font-size:20px" value="هل صحيح أن العين تكسر الحجر؟" />
+      </div>
+      <div class="field mb-3">
+        <label>الرابط (Slug)</label>
+        <div class="d-flex align-items-center gap-2 f-input" style="justify-content:space-between">
+          <span style="color:var(--parch-50)">العين-تكسر-الحجر</span>
+          <span class="text-muted-ka" style="font-size:13px;direction:ltr">khazaabalat.com/</span>
+        </div>
+      </div>
+      <div class="field mb-3">
+        <label>السطر التشويقي</label>
+        <textarea class="f-input" rows="2" style="resize:vertical">مقولة نسمعها من الصِّغَر… نتتبّع أصلها ونفصل ما ثبت عمّا اختُلق.</textarea>
+      </div>
+      <div class="field">
+        <label>المتن</label>
+        <div class="ed-wrap">
+          <div class="ed-bar">
+            {tools.map((t) => <button class="ed-btn">{t}</button>)}
+          </div>
+          <div class="ed-body">اكتب المقال هنا… استخدم شريط الأدوات للعناوين الفرعية والاقتباسات والصور.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- العمود الجانبي (يسار) -->
+    <div class="col-lg-4">
+      <!-- النشر -->
+      <div class="card-box mb-3">
+        <h3>النشر</h3>
+        <div class="status-group d-flex flex-wrap gap-2 mb-3" style="justify-content:flex-start">
+          {status.map(([t, a]) => <button class={a ? 'pill-tab active' : 'pill-tab'} data-status-pick>{t}</button>)}
+        </div>
+        <div class="d-flex align-items-center f-input" style="justify-content:space-between;background:var(--night-800)">
+          <span class="text-muted-ka" style="font-size:12px">تاريخ النشر</span>
+          <span style="color:var(--parch-50);font-size:14px">12 أغسطس 2026</span>
+        </div>
+      </div>
+
+      <!-- الباب والمقياس -->
+      <div class="card-box mb-3">
+        <h3>الباب</h3>
+        <div class="door-group d-flex flex-wrap gap-2 mb-3" style="justify-content:flex-start">
+          {doors.map(([t, c, a]) => (
+            <button class={a ? 'chip active' : 'chip'} style={`--c:${c}`} data-door-pick>
+              {t}<span style={`width:8px;height:8px;border-radius:50%;background:${c}`}></span>
+            </button>
+          ))}
+        </div>
+        <label style="display:block;text-align:start;font-family:var(--font-heading);font-weight:600;font-size:13px;color:var(--text-secondary);margin-bottom:8px">مقياس الخزعبلة <span class="text-muted-ka" style="font-weight:400">(انقر لتغيير المستوى)</span></label>
+        <div class="meter ka-meter" data-level="4" style="justify-content:flex-start">
+          <span class="meter__verdict ka-verdict" style="font-size:16px">خزعبلة</span>
+          <span class="meter__lamps">
+            {[1, 2, 3, 4, 5].map((v) => <button class="lamp" data-v={v} aria-label={`مستوى ${v}`}></button>)}
+          </span>
+        </div>
+      </div>
+
+      <!-- الغلاف -->
+      <div class="card-box mb-3">
+        <h3>صورة الغلاف</h3>
+        <div class="dropzone">
+          <div style="width:38px;height:38px;border-radius:50%;background:var(--night-600);display:grid;place-items:center;margin:0 auto 8px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--lantern-500)" stroke-width="2" stroke-linecap="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 20h14"/></svg>
+          </div>
+          <div style="font-family:var(--font-heading);font-weight:600;font-size:13px;color:var(--text-secondary)">اسحب صورة أو انقر للرفع</div>
+          <div class="text-muted-ka" style="font-size:11px;margin-top:4px">WebP · 1600×900</div>
+        </div>
+      </div>
+
+      <!-- الحكم والوسوم -->
+      <div class="card-box">
+        <h3>الحكم والوسوم</h3>
+        <textarea class="f-input mb-3" rows="2" style="background:var(--night-800);resize:vertical;font-size:13px">للفكرة أصلٌ في الموروث، لكن الصيغة المتداولة مبالغة لا سند لها.</textarea>
+        <div class="d-flex flex-wrap gap-2" style="justify-content:flex-start">
+          {['#العين', '#موروث_شعبي', '#الخليج'].map((t) => <span class="tag-ink" style="background:color-mix(in srgb,var(--teal-500) 16%,transparent);color:var(--teal-500)">{t}</span>)}
+          <span class="text-muted-ka" style="font-size:12px;align-self:center">أضف وسمًا…</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // مقياس الخزعبلة — قابل للتغيير بالنقر
+    const V = { 1: ['صحيحة تماماً', '#35A96A'], 2: ['فيها شي من الصح', '#3FB8A0'], 3: ['مشكوك فيها', '#E0A22C'], 4: ['خزعبلة', '#E2603F'], 5: ['خزعبلة كبرى', '#DC4C4C'] };
+    document.querySelectorAll('.ka-meter').forEach((meter) => {
+      const lamps = Array.from(meter.querySelectorAll('.lamp'));
+      const verdict = meter.querySelector('.ka-verdict');
+      const set = (lvl) => {
+        meter.dataset.level = String(lvl);
+        meter.style.setProperty('--meter-c', V[lvl][1]);
+        lamps.forEach((l) => l.classList.toggle('lit', Number(l.dataset.v) <= lvl));
+        if (verdict) { verdict.textContent = V[lvl][0]; verdict.style.color = V[lvl][1]; }
+      };
+      lamps.forEach((l) => l.addEventListener('click', () => set(Number(l.dataset.v))));
+      set(Number(meter.dataset.level) || 4);
+    });
+    // اختيار الباب + الحالة (مجموعة واحدة نشطة)
+    const single = (sel, itemSel) => {
+      const group = document.querySelector(sel);
+      if (!group) return;
+      const items = group.querySelectorAll(itemSel);
+      items.forEach((i) => i.addEventListener('click', () => { items.forEach((x) => x.classList.remove('active')); i.classList.add('active'); }));
+    };
+    single('.door-group', '[data-door-pick]');
+    single('.status-group', '[data-status-pick]');
+  </script>
+</AdminLayout>

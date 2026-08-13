@@ -1,0 +1,6 @@
+# خزعبلات — robots.txt
+User-agent: *
+Allow: /
+Disallow: /admin
+
+Sitemap: https://khazaabalat.com/sitemap.xml

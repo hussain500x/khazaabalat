@@ -1,0 +1,32 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Hero from '../components/Hero.astro';
+import DoorsGallery from '../components/DoorsGallery.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+import Ornament from '../components/Ornament.astro';
+import TelegramCTA from '../components/TelegramCTA.astro';
+import Footer from '../components/Footer.astro';
+import { articles } from '../data/site';
+---
+<Base description="خزعبلات — نفحص الخرافات والأساطير والطرائف الشعبية تحت الضوء ونقول لك الحقيقة بمقياس الخزعبلة (١–٥)، وأنت تضحك في الطريق.">
+  <Header />
+  <Hero />
+  <DoorsGallery />
+  <section class="section container-ka">
+    <Ornament />
+    <div class="d-flex justify-content-between align-items-center mt-4 mb-4" data-reveal>
+      <h2 style="font-size:clamp(28px,4vw,36px)">أحدث الخزعبلات</h2>
+      <a href="/articles" class="text-accent" style="font-family:var(--font-heading);font-weight:600">كل الخزعبلات ›</a>
+    </div>
+    <div class="row g-4">
+      {articles.map((a, i) => (
+        <div class="col-12 col-md-6 col-lg-4" data-reveal style={`--reveal-delay:${i * 0.1}s`}>
+          <ArticleCard a={a} />
+        </div>
+      ))}
+    </div>
+  </section>
+  <TelegramCTA />
+  <Footer />
+</Base>

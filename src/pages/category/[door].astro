@@ -1,0 +1,107 @@
+---
+import Base from '../../layouts/Base.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+import TelegramCTA from '../../components/TelegramCTA.astro';
+import { doors, CAT, type CatSlug } from '../../data/site';
+
+export function getStaticPaths() {
+  return doors.map((d) => ({ params: { door: d.slug }, props: { door: d } }));
+}
+const { door } = Astro.props;
+
+const desc: Record<string, string> = {
+  myths: 'خرافة شعبية منتشرة… نضعها تحت الضوء ونفصل ما ثبت عمّا اختُلق.',
+  legends: 'أساطير وحكايات الجدّات… نرويها ونكشف من وين جت أصلاً.',
+  satire: 'هزل وسخرية خفيفة الظل… لا تاخذ الموضوع بجد، أبداً.',
+  world: 'غرائب ومعتقدات وطقوس حول العالم… نمرّ عليها ونرجع.',
+};
+const icons: Record<string, string> = {
+  myths: `<svg width="56" height="56" viewBox="0 0 52 52" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="22" cy="22" r="15"/><path d="M33 33 L44 44" stroke-linecap="round"/></svg>`,
+  legends: `<svg width="56" height="56" viewBox="0 0 52 52" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M26 4 L31 20 L48 20 L34 30 L39 46 L26 36 L13 46 L18 30 L4 20 L21 20 Z"/></svg>`,
+  satire: `<svg width="56" height="56" viewBox="0 0 52 52" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M14 30 Q26 42 38 30"/><circle cx="17" cy="18" r="3" fill="currentColor" stroke="none"/><circle cx="35" cy="18" r="3" fill="currentColor" stroke="none"/></svg>`,
+  world: `<svg width="56" height="56" viewBox="0 0 52 52" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="26" cy="26" r="21"/><path d="M26 11 L31 26 L26 41 L21 26 Z" fill="currentColor" stroke="none"/></svg>`,
+};
+const samples: Record<string, [string, number][]> = {
+  myths: [['هل صحيح أن العين تكسر الحجر؟', 4], ['لماذا نقول «امسك الخشب»؟', 3], ['هل الملح يطرد الحسد؟', 4], ['المرآة المكسورة وسبع سنين نحس', 5], ['رفّة العين… تنبئ بشيء؟', 2], ['هل الرقم 13 منحوس عند العرب؟', 3]],
+  legends: [['أم الدويس: أشهر قصة مخيفة', 3], ['بو دريّة وحكايات البحر', 3], ['السعلوة: من الصحراء للمواقع', 4], ['حمارة القايلة', 3], ['طنطل ومسمار الجنّ', 4], ['عروس البحر في الموروث', 2]],
+  satire: [['خزعبلات نسمعها كل رمضان', 5], ['نصائح الواتساب الطبية: دليل ساخر', 5], ['«معلومات» انتشرت بمقطع واحد', 5], ['أعذار تأخّر الموظفين: تصنيف هزلي', 4], ['كيف تصنع خزعبلة تنتشر؟', 5], ['خبير… ولا بس واثق؟', 4]],
+  world: [['لماذا يخاف اليابانيون من الرقم 4؟', 2], ['طقس كسر الصحون في اليونان', 2], ['القطط السوداء عبر الثقافات', 3], ['عادات الزفاف الأغرب حول العالم', 2], ['قرع الجرس لطرد الأرواح', 3], ['طقوس استمطار غريبة', 2]],
+};
+const viewsArr = [1240, 980, 2100, 760, 1520, 640];
+const cards = samples[door.slug].map(([title, level], i) => ({
+  title, dek: 'نتتبّع أصلها ونقول لك الحكم — بأسلوب مبسّط وممتع.',
+  cat: CAT[door.slug as CatSlug].name, color: door.color, level, views: viewsArr[i],
+  readingTime: `${4 + (i % 3)} دقائق قراءة`, date: '10 أغسطس 2026',
+}));
+---
+<Base title={`${door.name} | خزعبلات`} description={desc[door.slug]}>
+  <Header />
+
+  <!-- رأس الباب -->
+  <section style={`background:linear-gradient(180deg, color-mix(in srgb, ${door.color} 30%, var(--night-900)), var(--night-800)); border-bottom:1px solid var(--border-subtle);`}>
+    <div class="container-ka text-start" style="padding-block:clamp(40px,6vw,64px)">
+      <nav class="breadcrumb-ka" style="color:var(--text-muted)">الرئيسية › {door.name}</nav>
+      <div class="d-flex align-items-center gap-3 mt-3">
+        <span style={`color:${door.color}`} set:html={icons[door.icon]}></span>
+        <h1 class="font-display" style="font-size:clamp(36px,6vw,56px); color:var(--parch-50); margin:0">{door.name}</h1>
+      </div>
+      <p class="text-secondary-ka mt-2" style="max-width:600px; font-size:18px; line-height:1.7">{desc[door.slug]}</p>
+      <div class="mt-2" style={`color:${door.color}; font-family:var(--font-heading); font-weight:600`}>{door.count}</div>
+    </div>
+  </section>
+
+  <section class="section container-ka" style={`padding-top:36px;--door:${door.color}`} data-sortgroup>
+    <!-- شريط الفرز (تفاعلي) -->
+    <div class="d-flex flex-wrap gap-2 mb-4">
+      <button type="button" class="sort-pill is-active" data-sort="newest">الأحدث</button>
+      <button type="button" class="sort-pill" data-sort="views">الأكثر قراءة</button>
+      <button type="button" class="sort-pill" data-sort="level">الأعلى في مقياس الخزعبلة</button>
+    </div>
+
+    <!-- الشبكة (قابلة للفرز) -->
+    <div class="row g-4 cards-grid">
+      {cards.map((a, i) => (
+        <div class="col-12 col-md-6 col-lg-4" data-newest={i} data-views={a.views} data-level={a.level} data-reveal style={`--reveal-delay:${(i % 3) * 0.08}s`}>
+          <ArticleCard a={a} />
+        </div>
+      ))}
+    </div>
+
+    <!-- إعلان in-feed -->
+    <div class="ad-slot my-4" style="min-height:120px" data-reveal>
+      <div class="text-center"><div class="ad-label mb-1">إعلان</div>مساحة إعلانية · 970×120</div>
+    </div>
+
+    <div class="d-flex justify-content-center align-items-center gap-2 mt-2">
+      <a href="/articles" class="btn btn-lantern rounded-3 px-4 py-2">شوف المزيد</a>
+    </div>
+  </section>
+
+  <script>
+    document.querySelectorAll('[data-sortgroup]').forEach((group) => {
+      const grid = group.querySelector('.cards-grid');
+      if (!grid) return;
+      const pills = group.querySelectorAll('.sort-pill');
+      pills.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          pills.forEach((b) => b.classList.remove('is-active'));
+          btn.classList.add('is-active');
+          const key = btn.getAttribute('data-sort');
+          const cols = Array.from(grid.children);
+          cols.sort((a, b) => {
+            if (key === 'newest') return Number(a.dataset.newest) - Number(b.dataset.newest);
+            if (key === 'views') return Number(b.dataset.views) - Number(a.dataset.views);
+            if (key === 'level') return Number(b.dataset.level) - Number(a.dataset.level);
+            return 0;
+          });
+          cols.forEach((c) => grid.appendChild(c));
+        });
+      });
+    });
+  </script>
+
+  <TelegramCTA />
+  <Footer />
+</Base>

@@ -1,0 +1,65 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+
+const setNav = ['عام', 'الفريق والصلاحيات', 'تلجرام', 'إعلانات AdSense', 'السيو والتحليلات', 'حسابي'];
+const members = [
+  ['حسين المرزوق', 'hussain@khazaabalat.com', 'مالك', '#E7B24B', false],
+  ['سارة العتيبي', 'sara@khazaabalat.com', 'محرّر', '#3FB8A0', true],
+  ['خالد الدوسري', 'khalid@khazaabalat.com', 'كاتب', '#7B5CD6', true],
+];
+---
+<AdminLayout title="الإعدادات | خزعبلات" active="settings" pageTitle="الإعدادات" subtitle="إعدادات الموقع والفريق">
+  <div class="row g-4">
+    <!-- القائمة الفرعية (يمين) -->
+    <div class="col-lg-3 order-lg-1 order-2">
+      <div class="set-nav d-flex flex-column gap-1">
+        {setNav.map((s, i) => <a href="#" class={i === 1 ? 'active' : ''}>{s}</a>)}
+      </div>
+    </div>
+
+    <!-- اللوحة (يسار) -->
+    <div class="col-lg-9 order-lg-2 order-1">
+      <div class="text-start mb-4">
+        <h2 style="font-family:var(--font-heading);font-weight:700;font-size:22px;color:var(--parch-50);margin:0">الفريق والصلاحيات</h2>
+        <p class="text-muted-ka" style="font-size:14px;margin-top:4px">أضِف محرّرين وكتّابًا وتحكّم في صلاحية كل واحد.</p>
+      </div>
+
+      <!-- دعوة -->
+      <div class="card-box mb-4">
+        <h3>دعوة محرّر جديد</h3>
+        <div class="d-flex flex-column flex-md-row gap-2">
+          <input class="f-input flex-grow-1" placeholder="البريد الإلكتروني للمحرّر…" />
+          <div class="d-flex align-items-center gap-2 f-input" style="width:150px;flex-shrink:0;justify-content:space-between">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="var(--text-muted)" stroke-width="1.6" stroke-linecap="round"><path d="M2 4l4 4 4-4"/></svg>
+            <span style="color:var(--parch-50);font-size:14px">محرّر</span>
+          </div>
+          <button class="btn btn-lantern rounded-3 px-4" style="flex-shrink:0">إرسال الدعوة</button>
+        </div>
+      </div>
+
+      <!-- الأعضاء -->
+      <div class="card-box">
+        <h3>أعضاء الفريق (3)</h3>
+        {members.map(([name, email, role, rc, canRemove], i) => (
+          <div class="member" style={i === 0 ? 'border-top:none' : ''}>
+            <span class="av" style={`background:linear-gradient(135deg,${rc},var(--night-600))`}></span>
+            <div class="flex-grow-1 text-start" style="min-width:0">
+              <div style="font-family:var(--font-heading);font-weight:600;font-size:15px;color:var(--parch-50)">{name}</div>
+              <div class="text-muted-ka" style="font-size:12px">{email}</div>
+            </div>
+            <span class="status" style={`background:color-mix(in srgb,${rc} 16%,transparent);color:${rc}`}>{role}</span>
+            {canRemove ? <button class="btn p-0" data-del-member style="color:#DC4C4C;font-family:var(--font-heading);font-weight:500;font-size:13px;background:none;border:none">إزالة</button> : <span class="text-muted-ka" style="font-size:13px">—</span>}
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll('[data-del-member]').forEach((btn) =>
+      btn.addEventListener('click', () => {
+        if (confirm('إزالة هذا العضو من الفريق؟')) btn.closest('.member')?.remove();
+      })
+    );
+  </script>
+</AdminLayout>

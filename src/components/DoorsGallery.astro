@@ -1,0 +1,31 @@
+---
+import { doors } from '../data/site';
+import Ornament from './Ornament.astro';
+
+const icons: Record<string, string> = {
+  myths:   `<svg width="52" height="52" viewBox="0 0 52 52" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="22" cy="22" r="15"/><path d="M33 33 L44 44" stroke-linecap="round"/></svg>`,
+  legends: `<svg width="52" height="52" viewBox="0 0 52 52" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M26 4 L31 20 L48 20 L34 30 L39 46 L26 36 L13 46 L18 30 L4 20 L21 20 Z"/></svg>`,
+  satire:  `<svg width="52" height="52" viewBox="0 0 52 52" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M14 30 Q26 42 38 30"/><circle cx="17" cy="18" r="3" fill="currentColor" stroke="none"/><circle cx="35" cy="18" r="3" fill="currentColor" stroke="none"/></svg>`,
+  world:   `<svg width="52" height="52" viewBox="0 0 52 52" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="26" cy="26" r="21"/><path d="M26 11 L31 26 L26 41 L21 26 Z" fill="currentColor" stroke="none"/></svg>`,
+};
+---
+<section class="section container-ka">
+  <Ornament />
+  <div class="text-start mt-4 mb-5" data-reveal>
+    <h2 style="font-size:clamp(28px,4vw,36px)">الأبواب الأربعة</h2>
+    <p class="text-secondary-ka mb-0">كل باب عالَمٌ قائم بذاته — اختَر بابك وادخل.</p>
+  </div>
+  <div class="row g-4">
+    {doors.map((d, i) => (
+      <div class="col-12 col-md-6 col-lg-3" data-reveal style={`--reveal-delay:${i * 0.08}s`}>
+        <a class="door" href={`/category/${d.slug}`} style={`--door:${d.color}`}>
+          <span class="door__glow"></span>
+          <span class="door__icon" set:html={icons[d.icon]}></span>
+          <div class="door__name">{d.name}</div>
+          <div class="door__count">{d.count}</div>
+          <div class="door__enter">ادخل ›</div>
+        </a>
+      </div>
+    ))}
+  </div>
+</section>

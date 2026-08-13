@@ -1,0 +1,84 @@
+---
+import Meter from './Meter.astro';
+
+// نجوم متناثرة: [x, y, نصف القطر, الشفافية]
+const stars: [number, number, number, number][] = [
+  [120,90,2,.7],[190,150,1.3,.5],[95,220,2.4,.8],[250,70,1.3,.6],[70,320,1.8,.6],
+  [160,380,1.3,.4],[300,150,1.3,.5],[360,300,1.3,.5],[220,440,1.3,.4],[120,470,1.8,.6],
+  [420,120,1.8,.6],[560,180,2.4,.7],[640,90,1.3,.5],[700,150,1.8,.6],[520,340,1.8,.5],
+  [660,270,1.3,.5],[430,60,1.8,.6],[760,220,1.3,.4],[590,300,1.8,.6],[280,250,1.3,.5],
+  [40,150,1.8,.6],[340,420,1.3,.4],[720,350,1.8,.5],[880,120,1.3,.4],[980,220,1.6,.4],[1080,90,1.3,.35],
+];
+const sparkles: [number, number][] = [[200,100],[610,150],[130,350]];
+const lines: [number,number,number,number][] = [[120,90,95,220],[420,120,560,180],[560,180,640,90]];
+---
+<section class="hero">
+  <!-- السماء: نجوم + هلال + كوكبة -->
+  <svg class="hero__sky" viewBox="0 0 1440 620" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="moonGrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#F4D08A"/><stop offset="1" stop-color="#E7B24B"/>
+      </linearGradient>
+      <mask id="crescentMask">
+        <rect width="1440" height="620" fill="black"/>
+        <circle cx="470" cy="120" r="54" fill="white"/>
+        <circle cx="493" cy="107" r="47" fill="black"/>
+      </mask>
+    </defs>
+    {lines.map(([x1,y1,x2,y2]) => <line class="sky-line" x1={x1} y1={y1} x2={x2} y2={y2} stroke="#E7B24B" stroke-opacity="0.18" stroke-width="1"/>)}
+    {stars.map(([x,y,r,o],i) => <circle class="twinkle" cx={x} cy={y} r={r} fill="#FDFBF6" opacity={o} style={`animation-delay:${(i%7)*0.4}s`}/>)}
+    {sparkles.map(([x,y]) => <path class="twinkle sky-line" transform={`translate(${x},${y})`} d="M0,-7 L1.6,-1.6 L7,0 L1.6,1.6 L0,7 L-1.6,1.6 L-7,0 L-1.6,-1.6 Z" fill="#F4D08A" opacity="0.85"/>)}
+    <circle class="sky-crescent" cx="470" cy="120" r="54" fill="url(#moonGrad)" mask="url(#crescentMask)"/>
+  </svg>
+
+  <div class="container-ka position-relative" style="z-index:1;padding-block:clamp(56px,9vw,110px)">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-7 text-start order-1">
+        <div class="overline mb-3" data-reveal>خزعبلة اليوم</div>
+        <h1 class="font-display" data-reveal style="font-size:clamp(40px,6vw,72px);line-height:1.35;color:var(--parch-50);margin:0;--reveal-delay:.1s">
+          هل صحيح أن العين تكسر الحجر؟
+        </h1>
+        <p class="mt-3 mb-4" data-reveal style="font-size:clamp(16px,2vw,18px);color:var(--text-secondary);max-width:640px;--reveal-delay:.2s">
+          مقولة نسمعها من الصِّغَر بثقة كأنها آية… نتتبّع أصلها في الموروث، ونفصل ما ثبت عمّا اختُلق — وأنت تضحك في الطريق.
+        </p>
+        <div class="d-flex flex-column align-items-start gap-4" data-reveal style="--reveal-delay:.3s">
+          <Meter level={4} verdict="خزعبلة" label="مقياس الخزعبلة" />
+          <a href="/article" class="btn btn-lantern rounded-3 px-4 py-3 d-inline-flex align-items-center gap-2">
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="var(--night-900)" aria-hidden="true"><path d="M8 0 L8 12 L0 6 Z"/></svg>
+            اقرأ الخزعبلة
+          </a>
+        </div>
+      </div>
+      <div class="col-lg-5 order-2 d-none d-lg-block" data-reveal style="--reveal-delay:.15s">
+        <div class="lantern-wrap">
+          <svg class="lantern" viewBox="0 0 180 250" aria-hidden="true">
+            <defs>
+              <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#F4D08A"/><stop offset="0.55" stop-color="#E7B24B"/><stop offset="1" stop-color="#9A6C1E"/>
+              </linearGradient>
+              <radialGradient id="haloGrad">
+                <stop offset="0" stop-color="#E7B24B" stop-opacity="0.5"/>
+                <stop offset="0.55" stop-color="#E7B24B" stop-opacity="0.12"/>
+                <stop offset="1" stop-color="#E7B24B" stop-opacity="0"/>
+              </radialGradient>
+              <radialGradient id="flameGrad">
+                <stop offset="0" stop-color="#FFF6E0"/><stop offset="0.5" stop-color="#F4D08A"/><stop offset="1" stop-color="#E7B24B" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <ellipse class="lantern-halo" cx="90" cy="150" rx="95" ry="100" fill="url(#haloGrad)"/>
+            <line x1="90" y1="4" x2="90" y2="48" stroke="#9A6C1E" stroke-width="2"/>
+            <circle cx="90" cy="52" r="8" fill="none" stroke="#E7B24B" stroke-width="2.5"/>
+            <path d="M70 62 L110 62 L118 80 L62 80 Z" fill="url(#goldGrad)"/>
+            <path d="M66 84 C50 122 50 162 66 194 L114 194 C130 162 130 122 114 84 Z" fill="url(#goldGrad)" stroke="#9A6C1E" stroke-width="1.5"/>
+            <ellipse cx="90" cy="140" rx="26" ry="42" fill="url(#flameGrad)"/>
+            <path d="M78 88 C68 126 68 160 78 190" stroke="#9A6C1E" stroke-width="1.4" fill="none" opacity="0.5"/>
+            <path d="M102 88 C112 126 112 160 102 190" stroke="#9A6C1E" stroke-width="1.4" fill="none" opacity="0.5"/>
+            <ellipse cx="90" cy="142" rx="8" ry="17" fill="#FFF6E0"/>
+            <path d="M64 198 L116 198 L108 216 L72 216 Z" fill="url(#goldGrad)"/>
+            <circle cx="90" cy="222" r="4" fill="#E7B24B"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
