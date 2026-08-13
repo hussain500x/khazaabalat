@@ -99,3 +99,10 @@ create policy invites_owner_all on public.invites for all
 -- ═══ 7) بعد أول تسجيل دخول لك: اجعل نفسك «مالك» ═══
 -- سجّل دخولك مرة واحدة في الموقع أولاً، ثم شغّل هذا السطر (وأنت مسجّل الدخول في هذه اللوحة):
 --   update public.profiles set role = 'owner' where id = auth.uid();
+
+-- ═══ 8) بيانات تجريبية (٣ مقالات منشورة) — لإثبات الاتصال ═══
+insert into public.articles (slug, title, dek, category, level, status, reading_time, published_at) values
+  ('ain-taksir-hajar', 'هل صحيح أن العين تكسر الحجر؟', 'مقولة نسمعها من الصِّغَر… نفحصها تحت الضوء ونقول لك الحكم.', 'myths', 4, 'published', '5 دقائق قراءة', now()),
+  ('om-aldwais', 'أم الدويس: أشهر قصة مخيفة في الخليج', 'اقعد… عندي لك حكاية تسمعها من جدّتك، ونكشف من وين جت أصلاً.', 'legends', 3, 'published', '6 دقائق قراءة', now()),
+  ('yaban-raqam-4', 'لماذا يخاف اليابانيون من الرقم 4؟', 'ثقافة كاملة تتجنّب رقماً بعينه… نمرّ على الحكاية ونرجع بالحقيقة.', 'world', 2, 'published', '4 دقائق قراءة', now())
+on conflict (slug) do nothing;
