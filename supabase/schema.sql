@@ -106,3 +106,11 @@ insert into public.articles (slug, title, dek, category, level, status, reading_
   ('om-aldwais', 'أم الدويس: أشهر قصة مخيفة في الخليج', 'اقعد… عندي لك حكاية تسمعها من جدّتك، ونكشف من وين جت أصلاً.', 'legends', 3, 'published', '6 دقائق قراءة', now()),
   ('yaban-raqam-4', 'لماذا يخاف اليابانيون من الرقم 4؟', 'ثقافة كاملة تتجنّب رقماً بعينه… نمرّ على الحكاية ونرجع بالحقيقة.', 'world', 2, 'published', '4 دقائق قراءة', now())
 on conflict (slug) do nothing;
+
+-- ═══ 9) منح صلاحيات الوصول للأدوار (RLS يبقى يتحكّم بالصفوف) ═══
+grant usage on schema public to anon, authenticated;
+grant select on public.articles to anon, authenticated;
+grant insert, update, delete on public.articles to authenticated;
+grant select on public.profiles to anon, authenticated;
+grant update on public.profiles to authenticated;
+grant select, insert, update, delete on public.invites to authenticated;

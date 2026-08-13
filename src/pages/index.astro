@@ -7,7 +7,9 @@ import ArticleCard from '../components/ArticleCard.astro';
 import Ornament from '../components/Ornament.astro';
 import TelegramCTA from '../components/TelegramCTA.astro';
 import Footer from '../components/Footer.astro';
-import { articles } from '../data/site';
+import { getPublishedArticles } from '../lib/articles';
+
+const articles = await getPublishedArticles();
 ---
 <Base description="خزعبلات — نفحص الخرافات والأساطير والطرائف الشعبية تحت الضوء ونقول لك الحقيقة بمقياس الخزعبلة (١–٥)، وأنت تضحك في الطريق.">
   <Header />
