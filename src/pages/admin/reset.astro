@@ -1,0 +1,63 @@
+---
+import 'bootstrap/dist/css/bootstrap.rtl.min.css';
+import '../../styles/theme.css';
+import '../../styles/admin.css';
+---
+<!doctype html>
+<html lang="ar" dir="rtl" data-bs-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>تعيين كلمة المرور | خزعبلات</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Rakkas&family=Readex+Pro:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body style="min-height:100vh;display:grid;place-items:center;background:radial-gradient(1200px 600px at 50% -10%, var(--night-700), var(--night-900));padding:24px">
+    <main style="width:100%;max-width:400px;background:var(--night-800);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:36px 28px">
+      <div class="d-flex flex-column align-items-center text-center mb-4">
+        <span class="brand-mark" style="width:52px;height:52px;font-size:24px;margin-bottom:14px">؟</span>
+        <h1 class="font-display" style="font-size:26px;color:var(--parch-50);margin:0">تعيين كلمة مرور جديدة</h1>
+      </div>
+      <form id="reset-form" class="d-flex flex-column gap-3 text-start">
+        <div>
+          <label for="new-password" class="d-block mb-2" style="font-family:var(--font-heading);font-weight:600;font-size:14px;color:var(--text-secondary)">كلمة المرور الجديدة</label>
+          <input id="new-password" type="password" required minlength="6" autocomplete="new-password" class="f-input w-100" placeholder="6 أحرف على الأقل" />
+        </div>
+        <div id="reset-error" style="display:none;color:#DC4C4C;font-size:14px;line-height:1.6"></div>
+        <button id="reset-btn" type="submit" class="btn btn-lantern rounded-3 py-3 mt-1">حفظ كلمة المرور</button>
+      </form>
+      <p style="text-align:center;margin-top:18px"><a href="/admin/login" style="color:var(--text-muted);font-size:13px">رجوع لتسجيل الدخول</a></p>
+    </main>
+
+    <script>
+      import { supabase } from '../../lib/supabase';
+      const sb = supabase();
+      const form = document.getElementById('reset-form') as HTMLFormElement;
+      const errEl = document.getElementById('reset-error') as HTMLElement;
+      const btn = document.getElementById('reset-btn') as HTMLButtonElement;
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errEl.style.display = 'none';
+        btn.disabled = true;
+        btn.textContent = 'جارٍ الحفظ…';
+        const password = (document.getElementById('new-password') as HTMLInputElement).value;
+        const { error } = await sb.auth.updateUser({ password });
+        if (error) {
+          errEl.textContent = 'تعذّر الحفظ — افتح رابط الاستعادة من بريدك من جديد ثم حاول.';
+          errEl.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = 'حفظ كلمة المرور';
+        } else {
+          location.replace('/admin');
+        }
+      });
+    </script>
+  </body>
+</html>

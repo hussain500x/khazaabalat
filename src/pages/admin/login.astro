@@ -36,6 +36,8 @@ import '../../styles/admin.css';
         </div>
         <div id="login-error" style="display:none;color:#DC4C4C;font-size:14px;line-height:1.6"></div>
         <button id="login-btn" type="submit" class="btn btn-lantern rounded-3 py-3 mt-1">دخول</button>
+        <button type="button" id="forgot-btn" style="background:none;border:none;color:var(--lantern-400);font-size:13px;cursor:pointer;font-family:var(--font-body);padding:2px;text-align:center">نسيت كلمة المرور؟</button>
+        <div id="reset-msg" style="display:none;color:var(--teal-500);font-size:14px;line-height:1.7;text-align:center"></div>
       </form>
     </main>
 
@@ -66,6 +68,28 @@ import '../../styles/admin.css';
           btn.textContent = 'دخول';
         } else {
           location.replace('/admin');
+        }
+      });
+
+      document.getElementById('forgot-btn')?.addEventListener('click', async () => {
+        const email = (document.getElementById('email') as HTMLInputElement).value.trim();
+        const msgEl = document.getElementById('reset-msg') as HTMLElement;
+        errEl.style.display = 'none';
+        msgEl.style.display = 'none';
+        if (!email) {
+          errEl.textContent = 'اكتب بريدك في الخانة أولًا، ثم اضغط «نسيت كلمة المرور؟».';
+          errEl.style.display = 'block';
+          return;
+        }
+        const { error } = await sb.auth.resetPasswordForEmail(email, {
+          redirectTo: location.origin + '/admin/reset',
+        });
+        if (error) {
+          errEl.textContent = 'تعذّر إرسال الرابط — تأكّد من البريد.';
+          errEl.style.display = 'block';
+        } else {
+          msgEl.textContent = 'أرسلنا رابط استعادة إلى بريدك. افتحه لتعيين كلمة مرور جديدة.';
+          msgEl.style.display = 'block';
         }
       });
     </script>
