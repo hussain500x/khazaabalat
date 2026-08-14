@@ -1,0 +1,25 @@
+---
+// بانر Adsterra (صيغة iframe). كل بانر داخل إطار srcdoc معزول
+// حتى لا يتعارض متغيّر atOptions العام بين عدة بانرات في نفس الصفحة.
+interface Props {
+  adKey: string;
+  width: number;
+  height: number;
+  label?: string;
+}
+const { adKey, width, height, label = 'إعلان' } = Astro.props;
+
+const doc = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>html,body{margin:0;padding:0;overflow:hidden;background:transparent}</style></head><body><script type="text/javascript">atOptions={'key':'${adKey}','format':'iframe','height':${height},'width':${width},'params':{}};</script><script type="text/javascript" src="https://www.highperformanceformat.com/${adKey}/invoke.js"></script></body></html>`;
+---
+<div class="ad-wrap" style="text-align:center;margin:8px 0">
+  <div class="ad-label" style="font-size:11px;color:var(--text-muted);letter-spacing:1px;margin-bottom:6px">{label}</div>
+  <iframe
+    srcdoc={doc}
+    width={width}
+    height={height}
+    scrolling="no"
+    title="مساحة إعلانية"
+    loading="lazy"
+    style={`border:0;display:block;margin:0 auto;width:${width}px;height:${height}px;max-width:100%`}
+  ></iframe>
+</div>

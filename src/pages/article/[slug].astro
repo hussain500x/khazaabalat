@@ -4,6 +4,7 @@ import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import Meter from '../../components/Meter.astro';
 import TelegramCTA from '../../components/TelegramCTA.astro';
+import AdBanner from '../../components/AdBanner.astro';
 import { getAllSlugs, getArticleBySlug } from '../../lib/articles';
 
 export async function getStaticPaths() {
@@ -98,6 +99,8 @@ const shareLinks = {
             <p class="caption-ink">لا يوجد نص لهذا المقال بعد.</p>
           )}
 
+          <AdBanner adKey="57240eb3923c5094a71ce14b74947dec" width={300} height={250} />
+
           <div class="verdict-box mt-4">
             <div class="ttl">الحكم</div>
             <div class="my-3"><Meter level={a.level} verdict={verdict} /></div>
@@ -116,8 +119,7 @@ const shareLinks = {
         <!-- العمود الجانبي (يسار): إعلان -->
         <aside class="leftrail">
           <div class="ad-sidebar">
-            <div class="ad-label text-start mb-2">إعلان</div>
-            <div class="ad-ink" style="height:600px">مساحة إعلانية<br />300×600</div>
+            <AdBanner adKey="f104cd654f60f563baebd65cade734b0" width={160} height={600} />
           </div>
         </aside>
       </div>

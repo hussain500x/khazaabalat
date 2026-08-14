@@ -6,6 +6,7 @@ import ArticleCard from '../../components/ArticleCard.astro';
 import TelegramCTA from '../../components/TelegramCTA.astro';
 import { doors } from '../../data/site';
 import { getArticlesByCategory } from '../../lib/articles';
+import AdBanner from '../../components/AdBanner.astro';
 
 export const prerender = true;
 
@@ -69,8 +70,8 @@ const arts = await getArticlesByCategory(door.slug);
         </div>
 
         <!-- إعلان in-feed -->
-        <div class="ad-slot my-4" style="min-height:120px" data-reveal>
-          <div class="text-center"><div class="ad-label mb-1">إعلان</div>مساحة إعلانية · 970×120</div>
+        <div class="my-4" data-reveal>
+          <AdBanner adKey="6abfe439d7d40334ccb6616389ba2145" width={728} height={90} />
         </div>
 
         <div class="d-flex justify-content-center align-items-center gap-2 mt-2">
