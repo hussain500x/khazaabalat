@@ -1,0 +1,42 @@
+---
+import Base from '../../layouts/Base.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+import { getAllTags, getArticlesByTag } from '../../lib/articles';
+
+export async function getStaticPaths() {
+  const tags = await getAllTags();
+  return tags.map((tag) => ({ params: { tag } }));
+}
+
+const { tag } = Astro.params;
+const arts = await getArticlesByTag(tag);
+---
+<Base title={`#${tag} | خزعبلات`} description={`كل الخزعبلات تحت وسم #${tag}`}>
+  <Header />
+  <PageHeader title={`#${tag}`} subtitle="كل الخزعبلات تحت هذا الوسم" />
+
+  <section class="section container-ka">
+    {arts.length > 0 ? (
+      <div class="row g-4">
+        {arts.map((art, i) => (
+          <div class="col-12 col-md-6 col-lg-4" data-reveal style={`--reveal-delay:${(i % 3) * 0.08}s`}>
+            <ArticleCard a={art} />
+          </div>
+        ))}
+      </div>
+    ) : (
+      <div class="text-start p-5" style="background:var(--night-700);border:1px solid var(--border-subtle);border-radius:var(--radius-md)">
+        <h2 class="font-display" style="font-size:26px;color:var(--parch-50);margin:0">ما في خزعبلات تحت هذا الوسم بعد</h2>
+        <p class="text-secondary-ka mt-2" style="font-size:17px;line-height:1.7;margin:0">
+          ما لقينا أي مقال موسوم بـ <span style="color:var(--lantern-500)">#{tag}</span> إلى الآن. جرّب وسمًا آخر أو تصفّح كل الخزعبلات.
+        </p>
+        <a href="/articles" class="btn btn-lantern rounded-3 px-4 py-2 mt-3">تصفّح كل الخزعبلات</a>
+      </div>
+    )}
+  </section>
+
+  <Footer />
+</Base>

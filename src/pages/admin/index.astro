@@ -1,16 +1,6 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
-import { CAT } from '../../data/site';
 
-const S = { published: ['منشور', '#35A96A'], draft: ['مسودة', '#7E7A6E'], scheduled: ['مجدول', '#4A8FE7'] };
-const rows = [
-  ['هل صحيح أن العين تكسر الحجر؟', 'خرافات وتفنيد', CAT.myths.color, 'published', '12 أغسطس 2026'],
-  ['أم الدويس: أشهر قصة مخيفة في الخليج', 'أساطير وحكايات', CAT.legends.color, 'published', '11 أغسطس 2026'],
-  ['لماذا يخاف اليابانيون من الرقم 4؟', 'غرائب العالم', CAT.world.color, 'scheduled', '14 أغسطس 2026'],
-  ['نصائح الواتساب الطبية: دليل ساخر', 'هزل وسخرية', CAT.satire.color, 'draft', '—'],
-  ['لماذا نقول «امسك الخشب»؟', 'خرافات وتفنيد', CAT.myths.color, 'published', '9 أغسطس 2026'],
-  ['السعلوة: من الصحراء لمواقع التواصل', 'أساطير وحكايات', CAT.legends.color, 'draft', '—'],
-];
 const tabs = [['الكل', 'all', true], ['منشور', 'published', false], ['مسودة', 'draft', false], ['مجدول', 'scheduled', false]];
 ---
 <AdminLayout title="إدارة المحتوى | خزعبلات" active="content" pageTitle="إدارة المحتوى" subtitle="أضِف، عدّل، واحذف مقالات الموقع">
@@ -18,7 +8,7 @@ const tabs = [['الكل', 'all', true], ['منشور', 'published', false], ['�
   <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
     <div class="text-start">
       <div style="font-family:var(--font-heading);font-weight:700;font-size:22px;color:var(--parch-50)">كل المقالات</div>
-      <div class="text-muted-ka" style="font-size:13px">124 مقالًا · 8 مسودات</div>
+      <div class="text-muted-ka" style="font-size:13px" id="count">—</div>
     </div>
     <a class="admin-newbtn" href="/admin/new" style="margin:0;padding:12px 18px">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--night-900)" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
@@ -31,39 +21,127 @@ const tabs = [['الكل', 'all', true], ['منشور', 'published', false], ['�
     {tabs.map(([t, f, a]) => <button class={a ? 'pill-tab active' : 'pill-tab'} data-filter={f}>{t}</button>)}
   </div>
 
-  <!-- القائمة (RTL: العنوان يمين، الأزرار يسار) -->
-  <div class="arc-list d-flex flex-column gap-2">
-    {rows.map(([title, cat, color, st, date]) => (
-      <div class="arc-item" data-status={st}>
-        <span class="title flex-grow-1 text-start">{title}</span>
-        <span class="badge-cat" style={`background:${color};flex-shrink:0`}>{cat}</span>
-        <span class="text-muted-ka" style="font-size:13px;white-space:nowrap;width:120px;text-align:center">{date}</span>
-        <span class="status" style={`background:color-mix(in srgb,${S[st][1]} 16%, transparent);color:${S[st][1]}`}>{S[st][0]}</span>
-        <div class="d-flex gap-2">
-          <a class="ic-sm" href="/admin/new" aria-label="تعديل"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.7" stroke-linejoin="round"><path d="M4 20l4-1L19 8l-3-3L5 16l-1 4Z"/></svg></a>
-          <button class="ic-sm" data-del aria-label="حذف"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#DC4C4C" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13"/></svg></button>
-        </div>
-      </div>
-    ))}
+  <!-- القائمة (RTL: العنوان يمين، الأزرار يسار) — تُملأ من Supabase في المتصفّح -->
+  <div class="arc-list d-flex flex-column gap-2" id="rows">
+    <div class="text-muted-ka" id="rows-loading" style="padding:28px;text-align:center;font-size:14px">جارٍ التحميل…</div>
   </div>
 
   <script>
-    const tabs = document.querySelectorAll('.content-tabs .pill-tab');
-    const items = document.querySelectorAll('.arc-list .arc-item');
-    tabs.forEach((t) =>
+    import { supabase } from '../../lib/supabase';
+    const sb = supabase();
+
+    const CATMAP = { myths: ['خرافات وتفنيد', '#3FB8A0'], legends: ['أساطير وحكايات', '#7B5CD6'], satire: ['هزل وسخرية', '#E2603F'], world: ['غرائب العالم', '#E7B24B'] };
+    const STATUS = { published: ['منشور', '#35A96A'], draft: ['مسودة', '#7E7A6E'], scheduled: ['مجدول', '#4A8FE7'] };
+    const MONTHS = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+
+    const rowsEl = document.getElementById('rows') as HTMLElement;
+    const countEl = document.getElementById('count') as HTMLElement;
+
+    const esc = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
+
+    function fmtDate(v: string | null): string {
+      if (!v) return '—';
+      const d = new Date(v);
+      if (isNaN(d.getTime())) return '—';
+      return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+    }
+
+    function showMessage(text: string) {
+      rowsEl.innerHTML = `<div class="text-muted-ka" style="padding:28px;text-align:center;font-size:14px">${esc(text)}</div>`;
+    }
+
+    function activeFilter(): string {
+      const on = document.querySelector('.content-tabs .pill-tab.active');
+      return on ? (on.getAttribute('data-filter') || 'all') : 'all';
+    }
+
+    function applyFilter() {
+      const f = activeFilter();
+      rowsEl.querySelectorAll('.arc-item').forEach((it) => {
+        (it as HTMLElement).style.display = f === 'all' || it.getAttribute('data-status') === f ? '' : 'none';
+      });
+    }
+
+    type Article = { id: string; title: string; category: string; status: string; published_at: string | null; created_at: string | null };
+
+    function rowHtml(a: Article): string {
+      const [catName, catColor] = CATMAP[a.category as keyof typeof CATMAP] || [a.category, '#7E7A6E'];
+      const [stLabel, stColor] = STATUS[a.status as keyof typeof STATUS] || [a.status, '#7E7A6E'];
+      const date = fmtDate(a.published_at || a.created_at);
+      return `
+        <span class="title flex-grow-1 text-start">${esc(a.title)}</span>
+        <span class="badge-cat" style="background:${esc(catColor)};flex-shrink:0">${esc(catName)}</span>
+        <span class="text-muted-ka" style="font-size:13px;white-space:nowrap;width:120px;text-align:center">${esc(date)}</span>
+        <span class="status" style="background:color-mix(in srgb,${esc(stColor)} 16%, transparent);color:${esc(stColor)}">${esc(stLabel)}</span>
+        <div class="d-flex gap-2">
+          <a class="ic-sm" href="/admin/new?id=${encodeURIComponent(a.id)}" aria-label="تعديل"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.7" stroke-linejoin="round"><path d="M4 20l4-1L19 8l-3-3L5 16l-1 4Z"/></svg></a>
+          <button class="ic-sm" data-del data-id="${esc(a.id)}" aria-label="حذف"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#DC4C4C" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13"/></svg></button>
+        </div>`;
+    }
+
+    function updateCount(list: Article[]) {
+      const total = list.length;
+      const drafts = list.filter((a) => a.status === 'draft').length;
+      countEl.textContent = `${total} مقالًا · ${drafts} مسودات`;
+    }
+
+    function render(list: Article[]) {
+      updateCount(list);
+      if (!list.length) {
+        showMessage('لا توجد مقالات بعد — اضغط «إضافة محتوى».');
+        return;
+      }
+      rowsEl.innerHTML = '';
+      for (const a of list) {
+        const row = document.createElement('div');
+        row.className = 'arc-item';
+        row.setAttribute('data-status', a.status);
+        row.setAttribute('data-id', a.id);
+        row.innerHTML = rowHtml(a);
+        rowsEl.appendChild(row);
+      }
+      applyFilter();
+    }
+
+    async function load() {
+      const { data, error } = await sb
+        .from('articles')
+        .select('id,title,category,status,published_at,created_at')
+        .order('created_at', { ascending: false });
+      if (error) {
+        showMessage('تعذّر تحميل المقالات: ' + error.message);
+        return;
+      }
+      render((data as Article[]) || []);
+    }
+
+    // تبويبات: تصفية حسب data-status مع إبقاء الصنف active
+    document.querySelectorAll('.content-tabs .pill-tab').forEach((t) =>
       t.addEventListener('click', () => {
-        tabs.forEach((x) => x.classList.remove('active'));
+        document.querySelectorAll('.content-tabs .pill-tab').forEach((x) => x.classList.remove('active'));
         t.classList.add('active');
-        const f = t.getAttribute('data-filter');
-        items.forEach((it) => {
-          (it as HTMLElement).style.display = f === 'all' || it.getAttribute('data-status') === f ? '' : 'none';
-        });
+        applyFilter();
       })
     );
-    document.querySelectorAll('[data-del]').forEach((btn) =>
-      btn.addEventListener('click', () => {
-        if (confirm('حذف هذا المقال؟')) btn.closest('.arc-item')?.remove();
-      })
-    );
+
+    // حذف (event delegation) — يعمل مع الصفوف المُولّدة ديناميكيًا
+    rowsEl.addEventListener('click', async (e) => {
+      const btn = (e.target as HTMLElement).closest('[data-del]') as HTMLElement | null;
+      if (!btn) return;
+      const id = btn.getAttribute('data-id');
+      if (!id) return;
+      if (!confirm('حذف هذا المقال؟')) return;
+      const { error } = await sb.from('articles').delete().eq('id', id);
+      if (error) {
+        alert(error.message);
+        return;
+      }
+      btn.closest('.arc-item')?.remove();
+      const remaining = rowsEl.querySelectorAll('.arc-item');
+      if (!remaining.length) showMessage('لا توجد مقالات بعد — اضغط «إضافة محتوى».');
+      countEl.textContent = `${remaining.length} مقالًا · ${Array.from(remaining).filter((r) => r.getAttribute('data-status') === 'draft').length} مسودات`;
+    });
+
+    load();
   </script>
 </AdminLayout>

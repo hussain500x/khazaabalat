@@ -4,9 +4,10 @@ import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import ArticleCard from '../../components/ArticleCard.astro';
 import TelegramCTA from '../../components/TelegramCTA.astro';
-import { doors, CAT, type CatSlug } from '../../data/site';
+import { doors } from '../../data/site';
+import { getArticlesByCategory } from '../../lib/articles';
 
-export const prerender = true; // مؤقت: تُبنى ثابتة لحين ربطها بالقاعدة
+export const prerender = true;
 
 export function getStaticPaths() {
   return doors.map((d) => ({ params: { door: d.slug }, props: { door: d } }));
@@ -25,18 +26,8 @@ const icons: Record<string, string> = {
   satire: `<svg width="56" height="56" viewBox="0 0 52 52" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M14 30 Q26 42 38 30"/><circle cx="17" cy="18" r="3" fill="currentColor" stroke="none"/><circle cx="35" cy="18" r="3" fill="currentColor" stroke="none"/></svg>`,
   world: `<svg width="56" height="56" viewBox="0 0 52 52" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="26" cy="26" r="21"/><path d="M26 11 L31 26 L26 41 L21 26 Z" fill="currentColor" stroke="none"/></svg>`,
 };
-const samples: Record<string, [string, number][]> = {
-  myths: [['هل صحيح أن العين تكسر الحجر؟', 4], ['لماذا نقول «امسك الخشب»؟', 3], ['هل الملح يطرد الحسد؟', 4], ['المرآة المكسورة وسبع سنين نحس', 5], ['رفّة العين… تنبئ بشيء؟', 2], ['هل الرقم 13 منحوس عند العرب؟', 3]],
-  legends: [['أم الدويس: أشهر قصة مخيفة', 3], ['بو دريّة وحكايات البحر', 3], ['السعلوة: من الصحراء للمواقع', 4], ['حمارة القايلة', 3], ['طنطل ومسمار الجنّ', 4], ['عروس البحر في الموروث', 2]],
-  satire: [['خزعبلات نسمعها كل رمضان', 5], ['نصائح الواتساب الطبية: دليل ساخر', 5], ['«معلومات» انتشرت بمقطع واحد', 5], ['أعذار تأخّر الموظفين: تصنيف هزلي', 4], ['كيف تصنع خزعبلة تنتشر؟', 5], ['خبير… ولا بس واثق؟', 4]],
-  world: [['لماذا يخاف اليابانيون من الرقم 4؟', 2], ['طقس كسر الصحون في اليونان', 2], ['القطط السوداء عبر الثقافات', 3], ['عادات الزفاف الأغرب حول العالم', 2], ['قرع الجرس لطرد الأرواح', 3], ['طقوس استمطار غريبة', 2]],
-};
-const viewsArr = [1240, 980, 2100, 760, 1520, 640];
-const cards = samples[door.slug].map(([title, level], i) => ({
-  title, dek: 'نتتبّع أصلها ونقول لك الحكم — بأسلوب مبسّط وممتع.',
-  cat: CAT[door.slug as CatSlug].name, color: door.color, level, views: viewsArr[i],
-  readingTime: `${4 + (i % 3)} دقائق قراءة`, date: '10 أغسطس 2026',
-}));
+
+const arts = await getArticlesByCategory(door.slug);
 ---
 <Base title={`${door.name} | خزعبلات`} description={desc[door.slug]}>
   <Header />
@@ -55,30 +46,38 @@ const cards = samples[door.slug].map(([title, level], i) => ({
   </section>
 
   <section class="section container-ka" style={`padding-top:36px;--door:${door.color}`} data-sortgroup>
-    <!-- شريط الفرز (تفاعلي) -->
-    <div class="d-flex flex-wrap gap-2 mb-4">
-      <button type="button" class="sort-pill is-active" data-sort="newest">الأحدث</button>
-      <button type="button" class="sort-pill" data-sort="views">الأكثر قراءة</button>
-      <button type="button" class="sort-pill" data-sort="level">الأعلى في مقياس الخزعبلة</button>
-    </div>
-
-    <!-- الشبكة (قابلة للفرز) -->
-    <div class="row g-4 cards-grid">
-      {cards.map((a, i) => (
-        <div class="col-12 col-md-6 col-lg-4" data-newest={i} data-views={a.views} data-level={a.level} data-reveal style={`--reveal-delay:${(i % 3) * 0.08}s`}>
-          <ArticleCard a={a} />
+    {arts.length === 0 ? (
+      <div class="text-center text-secondary-ka" style="padding-block:clamp(48px,8vw,96px); font-size:18px">
+        لا توجد مقالات في هذا الباب بعد.
+      </div>
+    ) : (
+      <>
+        <!-- شريط الفرز (تفاعلي) -->
+        <div class="d-flex flex-wrap gap-2 mb-4">
+          <button type="button" class="sort-pill is-active" data-sort="newest">الأحدث</button>
+          <button type="button" class="sort-pill" data-sort="views">الأكثر قراءة</button>
+          <button type="button" class="sort-pill" data-sort="level">الأعلى في مقياس الخزعبلة</button>
         </div>
-      ))}
-    </div>
 
-    <!-- إعلان in-feed -->
-    <div class="ad-slot my-4" style="min-height:120px" data-reveal>
-      <div class="text-center"><div class="ad-label mb-1">إعلان</div>مساحة إعلانية · 970×120</div>
-    </div>
+        <!-- الشبكة (قابلة للفرز) -->
+        <div class="row g-4 cards-grid">
+          {arts.map((art, i) => (
+            <div class="col-12 col-md-6 col-lg-4" data-newest={i} data-views={0} data-level={art.level} data-reveal style={`--reveal-delay:${(i % 3) * 0.08}s`}>
+              <ArticleCard a={art} />
+            </div>
+          ))}
+        </div>
 
-    <div class="d-flex justify-content-center align-items-center gap-2 mt-2">
-      <a href="/articles" class="btn btn-lantern rounded-3 px-4 py-2">شوف المزيد</a>
-    </div>
+        <!-- إعلان in-feed -->
+        <div class="ad-slot my-4" style="min-height:120px" data-reveal>
+          <div class="text-center"><div class="ad-label mb-1">إعلان</div>مساحة إعلانية · 970×120</div>
+        </div>
+
+        <div class="d-flex justify-content-center align-items-center gap-2 mt-2">
+          <a href="/articles" class="btn btn-lantern rounded-3 px-4 py-2">شوف المزيد</a>
+        </div>
+      </>
+    )}
   </section>
 
   <script>

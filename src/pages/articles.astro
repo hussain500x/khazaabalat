@@ -3,28 +3,22 @@ import Base from '../layouts/Base.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import PageHeader from '../components/PageHeader.astro';
-import { CAT, type CatSlug } from '../data/site';
+import { CAT } from '../data/site';
+import { getPublishedArticles, type ArticleView } from '../lib/articles';
 
-const months = [
-  {
-    m: 'أغسطس 2026',
-    items: [
-      ['هل صحيح أن العين تكسر الحجر؟', 'myths', '12 أغسطس', '5 دقائق'],
-      ['أم الدويس: أشهر قصة مخيفة في الخليج', 'legends', '11 أغسطس', '6 دقائق'],
-      ['لماذا يخاف اليابانيون من الرقم 4؟', 'world', '9 أغسطس', '4 دقائق'],
-      ['نصائح الواتساب الطبية: دليل ساخر', 'satire', '7 أغسطس', '3 دقائق'],
-      ['لماذا نقول «امسك الخشب»؟', 'myths', '4 أغسطس', '5 دقائق'],
-    ],
-  },
-  {
-    m: 'يوليو 2026',
-    items: [
-      ['السعلوة: من الصحراء إلى مواقع التواصل', 'legends', '28 يوليو', '6 دقائق'],
-      ['طقس كسر الصحون في اليونان', 'world', '24 يوليو', '4 دقائق'],
-      ['هل الملح يطرد الحسد؟', 'myths', '19 يوليو', '5 دقائق'],
-    ],
-  },
-];
+const all = await getPublishedArticles();
+
+// تجميع حسب الشهر: مفتاح المجموعة = التاريخ بعد إزالة اليوم ("12 أغسطس 2026" → "أغسطس 2026")
+// Map يحافظ على ترتيب الإدراج، والمقالات تصل بترتيب الأحدث أولًا، فتبقى المجموعات والعناصر مرتّبة.
+const groups = new Map<string, ArticleView[]>();
+for (const art of all) {
+  const key = art.date.trim().split(/\s+/).slice(1).join(' ') || 'غير مؤرّخة';
+  const bucket = groups.get(key);
+  if (bucket) bucket.push(art);
+  else groups.set(key, [art]);
+}
+const months = [...groups.entries()];
+
 const filters = [
   { t: 'الكل', h: '/articles', active: true },
   { t: CAT.myths.short, h: '/category/myths', color: CAT.myths.color },
@@ -41,22 +35,29 @@ const filters = [
     <div class="row g-4">
       <!-- القائمة (يمين) -->
       <div class="col-lg-8">
-        {months.map((mo) => (
-          <div class="mb-4" data-reveal>
-            <h2 class="text-start" style="font-size:20px;color:var(--lantern-500);font-family:var(--font-heading)">{mo.m}</h2>
-            <div class="d-flex flex-column gap-2 mt-3">
-              {mo.items.map(([title, cat, date, rt]) => (
-                <a href="/article" class="d-flex justify-content-between align-items-center gap-3 p-3 text-start" style="background:var(--night-700);border:1px solid var(--border-subtle);border-radius:10px">
-                  <span class="d-flex align-items-center gap-2" style="min-width:0">
-                    <span class="badge-cat" style={`background:${CAT[cat as CatSlug].color};flex-shrink:0`}>{CAT[cat as CatSlug].name}</span>
-                    <span style="color:var(--parch-50);font-family:var(--font-heading);font-weight:600;font-size:16px">{title}</span>
-                  </span>
-                  <span class="text-muted-ka" style="font-size:13px;white-space:nowrap">{date} · {rt}</span>
-                </a>
-              ))}
-            </div>
+        {months.length === 0 ? (
+          <div class="p-4 text-start" style="background:var(--night-700);border:1px solid var(--border-subtle);border-radius:var(--radius-md)">
+            <div style="font-family:var(--font-heading);font-weight:700;font-size:18px;color:var(--parch-50)">لا توجد خزعبلات بعد</div>
+            <p class="text-muted-ka mb-0 mt-2" style="font-size:15px">لسّه ما نشرنا شي هنا. عُد قريباً — الأرشيف يمتلئ أول بأول.</p>
           </div>
-        ))}
+        ) : (
+          months.map(([m, items]) => (
+            <div class="mb-4" data-reveal>
+              <h2 class="text-start" style="font-size:20px;color:var(--lantern-500);font-family:var(--font-heading)">{m}</h2>
+              <div class="d-flex flex-column gap-2 mt-3">
+                {items.map((art) => (
+                  <a href={`/article/${art.slug}`} class="d-flex justify-content-between align-items-center gap-3 p-3 text-start" style="background:var(--night-700);border:1px solid var(--border-subtle);border-radius:10px">
+                    <span class="d-flex align-items-center gap-2" style="min-width:0">
+                      <span class="badge-cat" style={`background:${art.color};flex-shrink:0`}>{art.cat}</span>
+                      <span style="color:var(--parch-50);font-family:var(--font-heading);font-weight:600;font-size:16px">{art.title}</span>
+                    </span>
+                    <span class="text-muted-ka" style="font-size:13px;white-space:nowrap">{art.date} · {art.readingTime}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
       <!-- الفلاتر (يسار) -->
