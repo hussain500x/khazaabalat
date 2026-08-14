@@ -7,6 +7,7 @@ import ArticleCard from '../components/ArticleCard.astro';
 import Ornament from '../components/Ornament.astro';
 import TelegramCTA from '../components/TelegramCTA.astro';
 import Footer from '../components/Footer.astro';
+import AdBanner from '../components/AdBanner.astro';
 import { getPublishedArticles } from '../lib/articles';
 
 const articles = await getPublishedArticles();
@@ -28,6 +29,9 @@ const articles = await getPublishedArticles();
         </div>
       ))}
     </div>
+  </section>
+  <section class="container-ka" style="padding-block:8px 32px" data-reveal>
+    <AdBanner adKey="57240eb3923c5094a71ce14b74947dec" width={300} height={250} />
   </section>
   <TelegramCTA />
   <Footer />
