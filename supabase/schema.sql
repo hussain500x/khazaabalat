@@ -114,3 +114,6 @@ grant insert, update, delete on public.articles to authenticated;
 grant select on public.profiles to anon, authenticated;
 grant update on public.profiles to authenticated;
 grant select, insert, update, delete on public.invites to authenticated;
+
+-- ═══ 10) عمود الوسوم (للقواعد المُنشأة قبل هذا التحديث) ═══
+alter table public.articles add column if not exists tags text[] not null default '{}';

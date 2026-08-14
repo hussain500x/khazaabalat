@@ -6,6 +6,8 @@ import ArticleCard from '../../components/ArticleCard.astro';
 import TelegramCTA from '../../components/TelegramCTA.astro';
 import { doors, CAT, type CatSlug } from '../../data/site';
 
+export const prerender = true; // مؤقت: تُبنى ثابتة لحين ربطها بالقاعدة
+
 export function getStaticPaths() {
   return doors.map((d) => ({ params: { door: d.slug }, props: { door: d } }));
 }
