@@ -1,6 +1,11 @@
 ---
 import { doors } from '../data/site';
 import Ornament from './Ornament.astro';
+import { getCategoryCounts } from '../lib/articles';
+
+const counts = await getCategoryCounts();
+const countLabel = (n: number) =>
+  n === 0 ? 'لا مقالات بعد' : n === 1 ? 'مقال واحد' : n === 2 ? 'مقالان' : n <= 10 ? `${n} مقالات` : `${n} مقالًا`;
 
 const icons: Record<string, string> = {
   myths:   `<svg width="52" height="52" viewBox="0 0 52 52" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="22" cy="22" r="15"/><path d="M33 33 L44 44" stroke-linecap="round"/></svg>`,
@@ -22,7 +27,7 @@ const icons: Record<string, string> = {
           <span class="door__glow"></span>
           <span class="door__icon" set:html={icons[d.icon]}></span>
           <div class="door__name">{d.name}</div>
-          <div class="door__count">{d.count}</div>
+          <div class="door__count">{countLabel(counts[d.slug] ?? 0)}</div>
           <div class="door__enter">ادخل ›</div>
         </a>
       </div>

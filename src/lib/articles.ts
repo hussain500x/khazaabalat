@@ -24,6 +24,13 @@ function arDate(iso: string | null): string {
   return `${d.getDate()} ${AR_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
 
+// مدة القراءة تُحسب تلقائيًا من المتن (≈200 كلمة/دقيقة). فارغة إذا لا متن.
+function readingTime(body: string): string {
+  const words = body ? body.trim().split(/\s+/).filter(Boolean).length : 0;
+  if (!words) return '';
+  return `${Math.max(1, Math.round(words / 200))} دقائق قراءة`;
+}
+
 function mapRow(r: any): ArticleView {
   const cat = CAT[r.category as CatSlug];
   return {
@@ -35,7 +42,7 @@ function mapRow(r: any): ArticleView {
     catSlug: r.category,
     color: cat?.color ?? '#E7B24B',
     level: r.level,
-    readingTime: r.reading_time ?? '',
+    readingTime: readingTime(r.body ?? ''),
     date: arDate(r.published_at ?? r.created_at ?? null),
     cover: r.cover_url ?? null,
     tags: r.tags ?? [],
@@ -111,4 +118,16 @@ export async function getAllTags(): Promise<string[]> {
   const set = new Set<string>();
   (data ?? []).forEach((r: any) => (r.tags ?? []).forEach((t: string) => set.add(t)));
   return [...set];
+}
+
+// عدد المقالات المنشورة لكل باب (slug → count)
+export async function getCategoryCounts(): Promise<Record<string, number>> {
+  const { data, error } = await supabase()
+    .from('articles')
+    .select('category')
+    .eq('status', 'published');
+  if (error) { console.error('[articles] counts:', error.message); return {}; }
+  const counts: Record<string, number> = {};
+  (data ?? []).forEach((r: any) => { counts[r.category] = (counts[r.category] ?? 0) + 1; });
+  return counts;
 }

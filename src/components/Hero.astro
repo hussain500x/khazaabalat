@@ -1,5 +1,13 @@
 ---
 import Meter from './Meter.astro';
+import { getPublishedArticles } from '../lib/articles';
+
+// المقال المميّز = أحدث مقال منشور (مع بديل لو ما فيه مقالات)
+const latest = (await getPublishedArticles())[0];
+const VERDICT: Record<number, string> = { 1: 'صحيحة تماماً', 2: 'فيها شي من الصح', 3: 'مشكوك فيها', 4: 'خزعبلة', 5: 'خزعبلة كبرى' };
+const featured = latest
+  ? { title: latest.title, dek: latest.dek, level: latest.level, verdict: VERDICT[latest.level] ?? '', href: `/article/${latest.slug}` }
+  : { title: 'خزعبلات — كل خزعبلة لها قصة', dek: 'نفحص الخرافات والأساطير والطرائف الشعبية تحت الضوء، ونقول لك الحقيقة بمقياس الخزعبلة.', level: 4, verdict: 'خزعبلة', href: '/articles' };
 
 // نجوم متناثرة: [x, y, نصف القطر, الشفافية]
 const stars: [number, number, number, number][] = [
@@ -36,14 +44,16 @@ const lines: [number,number,number,number][] = [[120,90,95,220],[420,120,560,180
       <div class="col-lg-7 text-start order-1">
         <div class="overline mb-3" data-reveal>خزعبلة اليوم</div>
         <h1 class="font-display" data-reveal style="font-size:clamp(40px,6vw,72px);line-height:1.35;color:var(--parch-50);margin:0;--reveal-delay:.1s">
-          هل صحيح أن العين تكسر الحجر؟
+          {featured.title}
         </h1>
-        <p class="mt-3 mb-4" data-reveal style="font-size:clamp(16px,2vw,18px);color:var(--text-secondary);max-width:640px;--reveal-delay:.2s">
-          مقولة نسمعها من الصِّغَر بثقة كأنها آية… نتتبّع أصلها في الموروث، ونفصل ما ثبت عمّا اختُلق — وأنت تضحك في الطريق.
-        </p>
+        {featured.dek && (
+          <p class="mt-3 mb-4" data-reveal style="font-size:clamp(16px,2vw,18px);color:var(--text-secondary);max-width:640px;--reveal-delay:.2s">
+            {featured.dek}
+          </p>
+        )}
         <div class="d-flex flex-column align-items-start gap-4" data-reveal style="--reveal-delay:.3s">
-          <Meter level={4} verdict="خزعبلة" label="مقياس الخزعبلة" />
-          <a href="/articles" class="btn btn-lantern rounded-3 px-4 py-3 d-inline-flex align-items-center gap-2">
+          <Meter level={featured.level} verdict={featured.verdict} label="مقياس الخزعبلة" />
+          <a href={featured.href} class="btn btn-lantern rounded-3 px-4 py-3 d-inline-flex align-items-center gap-2">
             <svg width="11" height="11" viewBox="0 0 12 12" fill="var(--night-900)" aria-hidden="true"><path d="M8 0 L8 12 L0 6 Z"/></svg>
             اقرأ الخزعبلة
           </a>
