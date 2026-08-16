@@ -14,12 +14,20 @@ const doors = [
 
   <div id="editor-msg" style="display:none;margin-bottom:16px;padding:12px 16px;border-radius:10px;font-size:14px;font-family:var(--font-heading);font-weight:600"></div>
 
+  <style>
+    .field-err { display:none; color:#DC4C4C; font-size:12px; font-family:var(--font-heading); font-weight:600; margin-top:6px; text-align:start; }
+    .field-err.show { display:block; }
+    .f-input.invalid { border-color:#DC4C4C !important; box-shadow:0 0 0 2px color-mix(in srgb,#DC4C4C 22%, transparent); }
+    #editor-msg ul { margin:8px 0 0; padding-inline-start:20px; font-weight:500; }
+  </style>
+
   <div class="row g-4">
     <!-- العمود الرئيسي (يمين) -->
     <div class="col-lg-8">
       <div class="field mb-3">
         <label>عنوان المقال</label>
-        <input id="f-title" class="f-input" style="font-family:var(--font-heading);font-weight:700;font-size:20px" placeholder="اكتب عنوان المقال…" />
+        <input id="f-title" class="f-input" style="font-family:var(--font-heading);font-weight:700;font-size:20px" placeholder="اكتب عنوان المقال…" aria-describedby="err-title" />
+        <div class="field-err" data-err="title" id="err-title" role="alert"></div>
       </div>
       <div class="field mb-3">
         <label>الرابط (Slug)</label>
@@ -30,11 +38,13 @@ const doors = [
       </div>
       <div class="field mb-3">
         <label>السطر التشويقي</label>
-        <textarea id="f-dek" class="f-input" rows="2" style="resize:vertical" placeholder="جملة تشويقية قصيرة تظهر في البطاقة…"></textarea>
+        <textarea id="f-dek" class="f-input" rows="2" style="resize:vertical" placeholder="جملة تشويقية قصيرة تظهر في البطاقة…" aria-describedby="err-dek"></textarea>
+        <div class="field-err" data-err="dek" id="err-dek" role="alert"></div>
       </div>
       <div class="field">
         <label>المتن</label>
-        <textarea id="f-body" class="f-input" rows="14" style="resize:vertical;line-height:1.9;font-size:15px" placeholder="اكتب المقال هنا… اترك سطرًا فارغًا لبدء فقرة جديدة."></textarea>
+        <textarea id="f-body" class="f-input" rows="14" style="resize:vertical;line-height:1.9;font-size:15px" placeholder="اكتب المقال هنا… اترك سطرًا فارغًا لبدء فقرة جديدة." aria-describedby="err-body"></textarea>
+        <div class="field-err" data-err="body" id="err-body" role="alert"></div>
       </div>
     </div>
 
@@ -84,6 +94,8 @@ const doors = [
 
   <script>
     import { supabase } from '../../lib/supabase';
+    import { validateArticle, isValid, FIELD_LABELS, type ArticleField } from '../../lib/validation';
+    import { saveArticle } from '../../lib/articles-admin';
     const sb = supabase();
 
     const titleEl = document.getElementById('f-title') as HTMLInputElement;
@@ -165,27 +177,69 @@ const doors = [
       });
     }
 
-    const showMsg = (text: string, ok: boolean) => {
-      msg.textContent = text;
+    const showMsg = (html: string, ok: boolean) => {
+      msg.innerHTML = html;
       msg.style.display = 'block';
       msg.style.background = ok ? 'color-mix(in srgb, var(--teal-500) 16%, transparent)' : 'color-mix(in srgb, #DC4C4C 16%, transparent)';
       msg.style.color = ok ? 'var(--teal-500)' : '#DC4C4C';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     };
+    const escapeHtml = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
+
+    // إظهار/إخفاء أخطاء الحقول المضمّنة
+    const errEls: Record<string, HTMLElement> = {};
+    document.querySelectorAll<HTMLElement>('.field-err').forEach((el) => { errEls[el.dataset.err as string] = el; });
+    const inputFor: Record<string, HTMLElement> = { title: titleEl, dek: dekEl, body: bodyEl };
+    const clearFieldError = (field: string) => {
+      errEls[field]?.classList.remove('show');
+      inputFor[field]?.classList.remove('invalid');
+    };
+    const clearAllFieldErrors = () => Object.keys(errEls).forEach(clearFieldError);
+    const showFieldErrors = (errors: Record<string, string | undefined>) => {
+      clearAllFieldErrors();
+      for (const [field, text] of Object.entries(errors)) {
+        const el = errEls[field];
+        if (el && text) { el.textContent = text; el.classList.add('show'); }
+        inputFor[field]?.classList.add('invalid');
+      }
+    };
+    // امسح خطأ الحقل عند تعديله
+    (['title', 'dek', 'body'] as const).forEach((f) => inputFor[f]?.addEventListener('input', () => clearFieldError(f)));
+
+    const publishBtn = document.getElementById('publish') as HTMLButtonElement;
+    const draftBtn = document.getElementById('save-draft') as HTMLButtonElement;
+    let saving = false;
 
     const save = async (status: string) => {
+      if (saving) return; // منع الإرسال المزدوج (نقر متكرّر)
       const title = titleEl.value.trim();
-      if (!title) { showMsg('اكتب عنوان المقال أولًا.', false); return; }
       if (!slug) slug = slugify(title);
       const body = bodyEl.value.trim();
-      const mins = Math.max(1, Math.round((body ? body.split(/\s+/).length : 0) / 200));
-      const tags = tagsEl.value.split(/[،,]/).map((t) => t.trim()).filter(Boolean);
       const category = document.querySelector('.door-group [data-cat].active')?.getAttribute('data-cat') || 'myths';
+      const level = Number(meter.dataset.level) || 4;
 
+      // تحقّق مشترك (نفس قواعد قيد قاعدة البيانات)
+      const errors = validateArticle({ title, dek: dekEl.value.trim(), body, category, level, status });
+      if (!isValid(errors)) {
+        showFieldErrors(errors);
+        const missing = (Object.keys(errors) as ArticleField[]).map((f) => `<li>${escapeHtml(FIELD_LABELS[f])}</li>`).join('');
+        showMsg(`تعذّر ${status === 'published' ? 'النشر' : 'الحفظ'} — أكمل الحقول التالية:<ul>${missing}</ul>`, false);
+        return;
+      }
+      clearAllFieldErrors();
+
+      saving = true;
+      publishBtn.disabled = true; draftBtn.disabled = true;
+      const busyBtn = status === 'published' ? publishBtn : draftBtn;
+      const prevLabel = busyBtn.textContent;
+      busyBtn.textContent = 'جارٍ الحفظ…';
+
+      const mins = Math.max(1, Math.round((body ? body.split(/\s+/).filter(Boolean).length : 0) / 200));
+      const tags = tagsEl.value.split(/[،,]/).map((t) => t.trim()).filter(Boolean);
       const { data: { user } } = await sb.auth.getUser();
       const row = {
         title, slug, dek: dekEl.value.trim(), body,
-        category, level: Number(meter.dataset.level) || 4, status,
+        category, level, status,
         cover_url: coverEl.value.trim() || null,
         reading_time: `${mins} دقائق قراءة`,
         tags,
@@ -193,16 +247,21 @@ const doors = [
         published_at: status === 'published' ? new Date().toISOString() : null,
       };
 
-      const { error } = editId
-        ? await sb.from('articles').update(row).eq('id', editId)
-        : await sb.from('articles').insert(row);
+      const result = await saveArticle(sb, { editId, row });
 
-      if (error) { showMsg('تعذّر الحفظ: ' + error.message, false); return; }
+      if (!result.ok) {
+        showMsg(escapeHtml(result.message), false);
+        saving = false;
+        publishBtn.disabled = false; draftBtn.disabled = false;
+        busyBtn.textContent = prevLabel;
+        return;
+      }
+      // الخادم أكّد الحالة — نجاح حقيقي فقط الآن
       showMsg(status === 'published' ? 'نُشر المقال بنجاح ✓' : 'حُفظ كمسودة ✓', true);
       setTimeout(() => location.assign('/admin'), 900);
     };
 
-    document.getElementById('publish')?.addEventListener('click', () => save('published'));
-    document.getElementById('save-draft')?.addEventListener('click', () => save('draft'));
+    publishBtn?.addEventListener('click', () => save('published'));
+    draftBtn?.addEventListener('click', () => save('draft'));
   </script>
 </AdminLayout>

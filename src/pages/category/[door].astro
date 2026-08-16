@@ -91,7 +91,7 @@ const arts = await getArticlesByCategory(door.slug);
           pills.forEach((b) => b.classList.remove('is-active'));
           btn.classList.add('is-active');
           const key = btn.getAttribute('data-sort');
-          const cols = Array.from(grid.children);
+          const cols = Array.from(grid.children) as HTMLElement[];
           cols.sort((a, b) => {
             if (key === 'newest') return Number(a.dataset.newest) - Number(b.dataset.newest);
             if (key === 'views') return Number(b.dataset.views) - Number(a.dataset.views);

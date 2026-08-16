@@ -130,10 +130,23 @@ const tabs = [['الكل', 'all', true], ['منشور', 'published', false], ['�
       if (!btn) return;
       const id = btn.getAttribute('data-id');
       if (!id) return;
+      if ((btn as HTMLButtonElement).disabled) return; // منع الحذف المزدوج
       if (!confirm('حذف هذا المقال؟')) return;
-      const { error } = await sb.from('articles').delete().eq('id', id);
-      if (error) {
-        alert(error.message);
+      (btn as HTMLButtonElement).disabled = true;
+      let deleted: unknown[] | null = null;
+      try {
+        // select() يؤكّد حذف صفّ فعليًا؛ صفر صفوف = رفض RLS صامت (لا نكذب بنجاح وهمي)
+        const { data, error } = await sb.from('articles').delete().eq('id', id).select('id');
+        if (error) { alert('تعذّر الحذف: ' + error.message); (btn as HTMLButtonElement).disabled = false; return; }
+        deleted = data as unknown[];
+      } catch (err) {
+        alert('خطأ في الاتصال: ' + (err instanceof Error ? err.message : String(err)));
+        (btn as HTMLButtonElement).disabled = false;
+        return;
+      }
+      if (!deleted || deleted.length === 0) {
+        alert('لم يُحذف المقال: لا تملك صلاحية حذفه (يتطلّب دور «محرّر» أو «مالك»).');
+        (btn as HTMLButtonElement).disabled = false;
         return;
       }
       btn.closest('.arc-item')?.remove();
