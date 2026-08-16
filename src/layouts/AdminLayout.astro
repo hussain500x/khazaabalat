@@ -92,7 +92,8 @@ const hasActions = Astro.slots.has('actions');
         if (root) root.style.visibility = 'visible';
       });
       document.getElementById('logout-btn')?.addEventListener('click', async () => {
-        await sb.auth.signOut();
+        const { error } = await sb.auth.signOut();
+        if (error) { alert('تعذّر تسجيل الخروج: ' + error.message); return; }
         location.replace('/admin/login');
       });
     </script>

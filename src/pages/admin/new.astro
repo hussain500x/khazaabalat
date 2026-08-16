@@ -165,8 +165,15 @@ const doors = [
     const editId = new URLSearchParams(location.search).get('id');
     if (editId) {
       document.title = 'تعديل مقال | خزعبلات';
-      sb.from('articles').select('*').eq('id', editId).single().then(({ data }) => {
-        if (!data) return;
+      // حدّث العنوان الظاهر في الشريط ليعكس وضع التعديل (لا «مقال جديد»)
+      const topH1 = document.querySelector('.admin-topbar h1.t');
+      if (topH1) topH1.textContent = 'تعديل مقال';
+      sb.from('articles').select('*').eq('id', editId).single().then(({ data, error }) => {
+        if (error || !data) {
+          // لا نترك المستخدم أمام نموذج فارغ صامت (قد يظنّه إنشاءً ويكرّر المقال)
+          showMsg(error ? 'تعذّر تحميل المقال للتعديل: ' + escapeHtml(error.message) : 'المقال المطلوب غير موجود.', false);
+          return;
+        }
         titleEl.value = data.title; slug = data.slug; slugEl.textContent = data.slug;
         dekEl.value = data.dek || ''; bodyEl.value = data.body || '';
         coverEl.value = data.cover_url || ''; updatePreview(); tagsEl.value = (data.tags || []).join('، ');

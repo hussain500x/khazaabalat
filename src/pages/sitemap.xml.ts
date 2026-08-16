@@ -1,15 +1,18 @@
 import type { APIRoute } from 'astro';
 import { doors } from '../data/site';
+import { getAllSlugs, getAllTags } from '../lib/articles';
 
-// المسارات العامة القابلة للفهرسة (بدون /admin و404).
-// ملاحظة: عند إضافة مسارات مقالات مستقلّة (Stage 2) وسّع القائمة أو ولّدها من قاعدة البيانات.
-const pages = ['', 'about', 'methodology', 'privacy', 'terms', 'contact', 'articles', 'article', 'search'];
+// المسارات العامة الثابتة القابلة للفهرسة (بدون /admin و404 و/article المجرّد غير الموجود).
+const pages = ['', 'about', 'methodology', 'privacy', 'terms', 'contact', 'articles', 'search'];
 
-export const GET: APIRoute = ({ site }) => {
+export const GET: APIRoute = async ({ site }) => {
   const origin = (site?.href ?? 'https://khazaabalat.com/').replace(/\/$/, '');
+  const [slugs, tags] = await Promise.all([getAllSlugs(), getAllTags()]);
   const routes = [
     ...pages.map((p) => (p ? `${origin}/${p}` : origin)),
     ...doors.map((d) => `${origin}/category/${d.slug}`),
+    ...slugs.map((s) => `${origin}/article/${encodeURIComponent(s)}`),
+    ...tags.map((t) => `${origin}/tag/${encodeURIComponent(t)}`),
   ];
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
