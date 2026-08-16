@@ -48,7 +48,10 @@ const hasActions = Astro.slots.has('actions');
         <div class="admin-user">
           <div class="flex-grow-1" style="text-align:start;min-width:0">
             <div id="user-name" style="font-family:var(--font-heading);font-weight:600;font-size:14px;color:var(--parch-50);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">…</div>
-            <button id="logout-btn" type="button" style="background:none;border:none;padding:0;font-size:12px;color:var(--text-muted);cursor:pointer;font-family:var(--font-body)">تسجيل الخروج</button>
+            <div class="d-flex align-items-center gap-2" style="margin-top:3px">
+              <span id="user-role" style="display:none;font-family:var(--font-heading);font-weight:700;font-size:10px;padding:2px 8px;border-radius:999px">…</span>
+              <button id="logout-btn" type="button" style="background:none;border:none;padding:0;font-size:12px;color:var(--text-muted);cursor:pointer;font-family:var(--font-body)">تسجيل الخروج</button>
+            </div>
           </div>
           <span class="av"></span>
         </div>
@@ -73,11 +76,26 @@ const hasActions = Astro.slots.has('actions');
       const sb = supabase();
       const root = document.getElementById('admin-root');
       // حارس الجلسة: لو ما فيه تسجيل دخول، حوّل لصفحة الدخول
+      const ROLE_BADGE: Record<string, [string, string]> = {
+        owner: ['مالك', '#E7B24B'], editor: ['محرّر', '#3FB8A0'], author: ['كاتب', '#7B5CD6'],
+      };
       sb.auth.getSession().then(({ data }) => {
         if (!data.session) { location.replace('/admin/login'); return; }
+        const user = data.session.user;
         const nameEl = document.getElementById('user-name');
-        if (nameEl) nameEl.textContent = data.session.user.email ?? 'مستخدم';
+        if (nameEl) nameEl.textContent = user.email ?? 'مستخدم';
         if (root) root.style.visibility = 'visible';
+        // اعرض دور المستخدم الحالي (غير حابس)
+        sb.from('profiles').select('role, full_name').eq('id', user.id).maybeSingle().then(({ data: prof }) => {
+          if (nameEl && prof?.full_name) nameEl.textContent = prof.full_name;
+          const roleEl = document.getElementById('user-role');
+          if (!roleEl) return;
+          const [label, color] = ROLE_BADGE[prof?.role ?? 'author'] ?? ROLE_BADGE.author;
+          roleEl.textContent = label;
+          roleEl.style.color = color;
+          roleEl.style.background = `color-mix(in srgb, ${color} 18%, transparent)`;
+          roleEl.style.display = 'inline-block';
+        });
       });
       document.getElementById('logout-btn')?.addEventListener('click', async () => {
         const { error } = await sb.auth.signOut();
