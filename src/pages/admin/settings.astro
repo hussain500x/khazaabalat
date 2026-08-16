@@ -1,65 +1,298 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
 
-const setNav = ['عام', 'الفريق والصلاحيات', 'تلجرام', 'إعلانات AdSense', 'السيو والتحليلات', 'حسابي'];
-const members = [
-  ['حسين المرزوق', 'hussain@khazaabalat.com', 'مالك', '#E7B24B', false],
-  ['سارة العتيبي', 'sara@khazaabalat.com', 'محرّر', '#3FB8A0', true],
-  ['خالد الدوسري', 'khalid@khazaabalat.com', 'كاتب', '#7B5CD6', true],
+const tabs: [string, string][] = [
+  ['general', 'عام'],
+  ['team', 'الفريق والصلاحيات'],
+  ['telegram', 'تلجرام'],
+  ['adsense', 'إعلانات AdSense'],
+  ['seo', 'السيو والتحليلات'],
+  ['account', 'حسابي'],
 ];
 ---
 <AdminLayout title="الإعدادات | خزعبلات" active="settings" pageTitle="الإعدادات" subtitle="إعدادات الموقع والفريق">
   <div class="row g-4">
     <!-- القائمة الفرعية (يمين) -->
     <div class="col-lg-3 order-lg-1 order-2">
-      <div class="set-nav d-flex flex-column gap-1">
-        {setNav.map((s, i) => <a href="#" class={i === 1 ? 'active' : ''}>{s}</a>)}
+      <div class="set-nav d-flex flex-column gap-1" id="set-nav">
+        {tabs.map(([k, t], i) => <a href={`#${k}`} data-tab={k} class={i === 0 ? 'active' : ''}>{t}</a>)}
       </div>
     </div>
 
     <!-- اللوحة (يسار) -->
     <div class="col-lg-9 order-lg-2 order-1">
-      <div class="text-start mb-4">
-        <h2 style="font-family:var(--font-heading);font-weight:700;font-size:22px;color:var(--parch-50);margin:0">الفريق والصلاحيات</h2>
-        <p class="text-muted-ka" style="font-size:14px;margin-top:4px">أضِف محرّرين وكتّابًا وتحكّم في صلاحية كل واحد.</p>
-      </div>
+      <div id="settings-msg" style="display:none;margin-bottom:16px;padding:12px 16px;border-radius:10px;font-size:14px;font-family:var(--font-heading);font-weight:600"></div>
+      <div id="owner-note" style="display:none;margin-bottom:16px;padding:10px 14px;border-radius:10px;font-size:13px;background:color-mix(in srgb,var(--lantern-500) 12%,transparent);color:var(--lantern-400)">بعض الإعدادات للمالك فقط — دورك الحالي لا يسمح بتعديلها.</div>
 
-      <!-- دعوة -->
-      <div class="card-box mb-4">
-        <h3>دعوة محرّر جديد</h3>
-        <div class="d-flex flex-column flex-md-row gap-2">
-          <input class="f-input flex-grow-1" placeholder="البريد الإلكتروني للمحرّر…" />
-          <div class="d-flex align-items-center gap-2 f-input" style="width:150px;flex-shrink:0;justify-content:space-between">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="var(--text-muted)" stroke-width="1.6" stroke-linecap="round"><path d="M2 4l4 4 4-4"/></svg>
-            <span style="color:var(--parch-50);font-size:14px">محرّر</span>
-          </div>
-          <button class="btn btn-lantern rounded-3 px-4" style="flex-shrink:0">إرسال الدعوة</button>
+      <!-- ═══ عام ═══ -->
+      <section data-panel="general">
+        <div class="text-start mb-4"><h2 class="set-h2">عام</h2><p class="set-p">اسم الموقع وشعاره.</p></div>
+        <div class="card-box">
+          <div class="field mb-3"><label>اسم الموقع</label><input id="g-site-name" class="f-input" /></div>
+          <div class="field mb-3"><label>الشعار (Tagline)</label><input id="g-tagline" class="f-input" /></div>
+          <button class="btn btn-lantern rounded-3 px-4 py-2" data-save="general">حفظ</button>
+          <span class="set-hint">يظهر بعد إعادة النشر.</span>
         </div>
-      </div>
+      </section>
 
-      <!-- الأعضاء -->
-      <div class="card-box">
-        <h3>أعضاء الفريق (3)</h3>
-        {members.map(([name, email, role, rc, canRemove], i) => (
-          <div class="member" style={i === 0 ? 'border-top:none' : ''}>
-            <span class="av" style={`background:linear-gradient(135deg,${rc},var(--night-600))`}></span>
-            <div class="flex-grow-1 text-start" style="min-width:0">
-              <div style="font-family:var(--font-heading);font-weight:600;font-size:15px;color:var(--parch-50)">{name}</div>
-              <div class="text-muted-ka" style="font-size:12px">{email}</div>
+      <!-- ═══ الفريق والصلاحيات ═══ -->
+      <section data-panel="team" hidden>
+        <div class="text-start mb-4"><h2 class="set-h2">الفريق والصلاحيات</h2><p class="set-p">أضِف أعضاء وتحكّم في دور كل واحد.</p></div>
+
+        <div class="card-box mb-4" id="add-member-card">
+          <h3>إضافة عضو جديد</h3>
+          <div class="row g-2">
+            <div class="col-md-6"><input id="m-name" class="f-input" placeholder="الاسم" /></div>
+            <div class="col-md-6"><input id="m-email" class="f-input" type="email" placeholder="البريد الإلكتروني" style="direction:ltr" /></div>
+            <div class="col-md-6"><input id="m-pass" class="f-input" type="text" placeholder="كلمة السر (6 أحرف فأكثر)" style="direction:ltr" /></div>
+            <div class="col-md-6">
+              <select id="m-role" class="f-input"><option value="author">كاتب</option><option value="editor">محرّر</option><option value="owner">مالك</option></select>
             </div>
-            <span class="status" style={`background:color-mix(in srgb,${rc} 16%,transparent);color:${rc}`}>{role}</span>
-            {canRemove ? <button class="btn p-0" data-del-member style="color:#DC4C4C;font-family:var(--font-heading);font-weight:500;font-size:13px;background:none;border:none">إزالة</button> : <span class="text-muted-ka" style="font-size:13px">—</span>}
           </div>
-        ))}
-      </div>
+          <button class="btn btn-lantern rounded-3 px-4 py-2 mt-3" id="add-member">إضافة العضو</button>
+          <div class="set-hint mt-2" style="display:block">تُنشأ الحسابات مباشرةً بإيميل وكلمة سر (عبر دالة خادم آمنة).</div>
+        </div>
+
+        <div class="card-box">
+          <h3 id="members-title">أعضاء الفريق</h3>
+          <div id="members-list"><div class="text-muted-ka" style="padding:16px 0;font-size:14px">جارٍ التحميل…</div></div>
+        </div>
+      </section>
+
+      <!-- ═══ تلجرام ═══ -->
+      <section data-panel="telegram" hidden>
+        <div class="text-start mb-4"><h2 class="set-h2">تلجرام</h2><p class="set-p">رابط قناة/مجموعة تلجرام الظاهر في الموقع.</p></div>
+        <div class="card-box">
+          <div class="field mb-3"><label>رابط تلجرام</label><input id="tg-url" class="f-input" style="direction:ltr" placeholder="https://t.me/…" /></div>
+          <button class="btn btn-lantern rounded-3 px-4 py-2" data-save="telegram">حفظ</button>
+          <span class="set-hint">يظهر للزوار فورًا (بلا إعادة نشر).</span>
+        </div>
+      </section>
+
+      <!-- ═══ AdSense ═══ -->
+      <section data-panel="adsense" hidden>
+        <div class="text-start mb-4"><h2 class="set-h2">إعلانات AdSense</h2><p class="set-p">معرّف الناشر وتفعيل الإعلانات.</p></div>
+        <div class="card-box">
+          <div class="field mb-3"><label>معرّف الناشر (Publisher ID)</label><input id="ad-client" class="f-input" style="direction:ltr" placeholder="ca-pub-XXXXXXXXXXXXXXXX" /></div>
+          <label class="d-flex align-items-center gap-2" style="cursor:pointer;font-family:var(--font-heading);font-weight:600;font-size:14px;color:var(--text-secondary)">
+            <input id="ad-enabled" type="checkbox" style="width:18px;height:18px;accent-color:var(--lantern-500)" /> تفعيل عرض الإعلانات
+          </label>
+          <div class="mt-3"><button class="btn btn-lantern rounded-3 px-4 py-2" data-save="adsense">حفظ</button><span class="set-hint">يظهر بعد إعادة النشر.</span></div>
+        </div>
+      </section>
+
+      <!-- ═══ السيو والتحليلات ═══ -->
+      <section data-panel="seo" hidden>
+        <div class="text-start mb-4"><h2 class="set-h2">السيو والتحليلات</h2><p class="set-p">عنوان ووصف الموقع الافتراضيان ومعرّف التحليلات.</p></div>
+        <div class="card-box">
+          <div class="field mb-3"><label>عنوان الموقع الافتراضي</label><input id="seo-title" class="f-input" /></div>
+          <div class="field mb-3"><label>الوصف الافتراضي</label><textarea id="seo-desc" class="f-input" rows="3" style="resize:vertical"></textarea></div>
+          <div class="field mb-3"><label>معرّف Google Analytics</label><input id="seo-analytics" class="f-input" style="direction:ltr" placeholder="G-XXXXXXXXXX" /></div>
+          <button class="btn btn-lantern rounded-3 px-4 py-2" data-save="seo">حفظ</button>
+          <span class="set-hint">يظهر بعد إعادة النشر.</span>
+        </div>
+      </section>
+
+      <!-- ═══ حسابي ═══ -->
+      <section data-panel="account" hidden>
+        <div class="text-start mb-4"><h2 class="set-h2">حسابي</h2><p class="set-p">بياناتك وكلمة مرورك.</p></div>
+        <div class="card-box mb-4">
+          <div class="field mb-3"><label>البريد الإلكتروني</label><input id="acc-email" class="f-input" style="direction:ltr;opacity:.6" disabled /></div>
+          <div class="field mb-3"><label>الاسم الظاهر</label><input id="acc-name" class="f-input" /></div>
+          <button class="btn btn-lantern rounded-3 px-4 py-2" data-save="account-name">حفظ الاسم</button>
+        </div>
+        <div class="card-box">
+          <h3>تغيير كلمة المرور</h3>
+          <div class="field mb-3"><label>كلمة مرور جديدة</label><input id="acc-pass" class="f-input" type="password" style="direction:ltr" placeholder="6 أحرف على الأقل" autocomplete="new-password" /></div>
+          <button class="btn btn-lantern rounded-3 px-4 py-2" data-save="account-pass">تحديث كلمة المرور</button>
+        </div>
+      </section>
     </div>
   </div>
 
+  <style>
+    .set-h2 { font-family:var(--font-heading); font-weight:700; font-size:22px; color:var(--parch-50); margin:0; }
+    .set-p { color:var(--text-muted); font-size:14px; margin-top:4px; }
+    .set-hint { color:var(--text-muted); font-size:12px; margin-inline-start:12px; }
+    .set-nav a { cursor:pointer; }
+    .member select.role-sel { width:auto; padding:6px 10px; font-size:13px; }
+    .btn[disabled], input[disabled], select[disabled] { opacity:.5; cursor:not-allowed; }
+  </style>
+
   <script>
-    document.querySelectorAll('[data-del-member]').forEach((btn) =>
-      btn.addEventListener('click', () => {
-        if (confirm('إزالة هذا العضو من الفريق؟')) btn.closest('.member')?.remove();
+    import { supabase } from '../../lib/supabase';
+    const sb = supabase();
+
+    const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
+    const val = (id: string) => ($(id) as HTMLInputElement).value.trim();
+    const setVal = (id: string, v: string) => { ($(id) as HTMLInputElement).value = v; };
+
+    const ROLE_LABEL: Record<string, [string, string]> = {
+      owner: ['مالك', '#E7B24B'], editor: ['محرّر', '#3FB8A0'], author: ['كاتب', '#7B5CD6'],
+    };
+    const esc = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
+
+    const msgEl = $('settings-msg');
+    const showMsg = (text: string, ok: boolean) => {
+      msgEl.textContent = text;
+      msgEl.style.display = 'block';
+      msgEl.style.background = ok ? 'color-mix(in srgb, var(--teal-500) 16%, transparent)' : 'color-mix(in srgb, #DC4C4C 16%, transparent)';
+      msgEl.style.color = ok ? 'var(--teal-500)' : '#DC4C4C';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // ── تبديل التبويبات ──
+    const panels = Array.from(document.querySelectorAll<HTMLElement>('[data-panel]'));
+    const navLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>('#set-nav a'));
+    const showTab = (key: string) => {
+      panels.forEach((p) => { p.hidden = p.dataset.panel !== key; });
+      navLinks.forEach((a) => a.classList.toggle('active', a.dataset.tab === key));
+    };
+    navLinks.forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); showTab(a.dataset.tab as string); history.replaceState(null, '', '#' + a.dataset.tab); }));
+    if (location.hash) { const k = location.hash.slice(1); if (panels.some((p) => p.dataset.panel === k)) showTab(k); }
+
+    // ── الحالة ──
+    let me: { id: string; role: string } = { id: '', role: 'author' };
+
+    // تحديث صف الإعدادات مع تأكيد فعلي (لا نجاح كاذب)
+    async function updateSettings(patch: Record<string, unknown>) {
+      const { data, error } = await sb.from('site_settings').update(patch).eq('id', 1).select('id');
+      if (error) return { ok: false, message: /row-level|permission/i.test(error.message) ? 'هذا الإعداد للمالك فقط.' : error.message };
+      if (!data || data.length === 0) return { ok: false, message: 'لم يُحفظ — هذا الإعداد للمالك فقط.' };
+      return { ok: true };
+    }
+
+    // ── تحميل البيانات ──
+    async function init() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) { location.replace('/admin/login'); return; }
+
+      const { data: prof } = await sb.from('profiles').select('role, full_name, email').eq('id', user.id).maybeSingle();
+      me = { id: user.id, role: prof?.role ?? 'author' };
+
+      // حسابي
+      setVal('acc-email', prof?.email ?? user.email ?? '');
+      setVal('acc-name', prof?.full_name ?? '');
+
+      // الإعدادات العامة
+      const { data: s } = await sb.from('site_settings').select('*').eq('id', 1).maybeSingle();
+      if (s) {
+        setVal('g-site-name', s.site_name ?? '');
+        setVal('g-tagline', s.tagline ?? '');
+        setVal('tg-url', s.telegram_url ?? '');
+        setVal('ad-client', s.adsense_client ?? '');
+        ($('ad-enabled') as HTMLInputElement).checked = !!s.adsense_enabled;
+        setVal('seo-title', s.seo_title ?? '');
+        setVal('seo-desc', s.seo_description ?? '');
+        setVal('seo-analytics', s.analytics_id ?? '');
+      }
+
+      // بوّابة المالك: عطّل ما لا يخصّ غير المالك
+      const isOwner = me.role === 'owner';
+      if (!isOwner) {
+        $('owner-note').style.display = 'block';
+        document.querySelectorAll<HTMLButtonElement>('[data-save="general"],[data-save="telegram"],[data-save="adsense"],[data-save="seo"]').forEach((b) => (b.disabled = true));
+        ['g-site-name', 'g-tagline', 'tg-url', 'ad-client', 'ad-enabled', 'seo-title', 'seo-desc', 'seo-analytics'].forEach((id) => (($(id) as HTMLInputElement).disabled = true));
+        $('add-member-card').style.display = 'none';
+      }
+
+      await loadMembers();
+    }
+
+    // ── الأعضاء ──
+    async function loadMembers() {
+      const { data, error } = await sb.from('profiles').select('id, full_name, email, role').order('created_at', { ascending: true });
+      const box = $('members-list');
+      if (error) { box.innerHTML = `<div class="text-muted-ka" style="padding:12px 0">تعذّر التحميل: ${esc(error.message)}</div>`; return; }
+      const list = data ?? [];
+      $('members-title').textContent = `أعضاء الفريق (${list.length})`;
+      const isOwner = me.role === 'owner';
+      box.innerHTML = '';
+      list.forEach((m: any, i: number) => {
+        const [label, color] = ROLE_LABEL[m.role] ?? [m.role, '#7E7A6E'];
+        const row = document.createElement('div');
+        row.className = 'member';
+        if (i === 0) row.style.borderTop = 'none';
+        const roleControl = isOwner
+          ? `<select class="f-input role-sel" data-role-for="${esc(m.id)}">${['owner', 'editor', 'author'].map((r) => `<option value="${r}" ${r === m.role ? 'selected' : ''}>${ROLE_LABEL[r][0]}</option>`).join('')}</select>`
+          : `<span class="status" style="background:color-mix(in srgb,${color} 16%,transparent);color:${color}">${esc(label)}</span>`;
+        const removeControl = isOwner && m.id !== me.id
+          ? `<button class="btn p-0" data-remove="${esc(m.id)}" style="color:#DC4C4C;background:none;border:none;font-family:var(--font-heading);font-weight:500;font-size:13px">إزالة</button>`
+          : `<span class="text-muted-ka" style="font-size:13px">${m.id === me.id ? 'أنت' : '—'}</span>`;
+        row.innerHTML = `
+          <span class="av" style="background:linear-gradient(135deg,${color},var(--night-600))"></span>
+          <div class="flex-grow-1 text-start" style="min-width:0">
+            <div style="font-family:var(--font-heading);font-weight:600;font-size:15px;color:var(--parch-50)">${esc(m.full_name || '—')}</div>
+            <div class="text-muted-ka" style="font-size:12px;direction:ltr;text-align:start">${esc(m.email || '')}</div>
+          </div>
+          ${roleControl}
+          ${removeControl}`;
+        box.appendChild(row);
+      });
+    }
+
+    // تغيير الدور (event delegation)
+    $('members-list').addEventListener('change', async (e) => {
+      const sel = (e.target as HTMLElement).closest('[data-role-for]') as HTMLSelectElement | null;
+      if (!sel) return;
+      const id = sel.getAttribute('data-role-for')!;
+      const role = sel.value;
+      sel.disabled = true;
+      const { data, error } = await sb.from('profiles').update({ role }).eq('id', id).select('id');
+      sel.disabled = false;
+      if (error || !data || data.length === 0) { showMsg('تعذّر تغيير الدور — للمالك فقط.', false); await loadMembers(); return; }
+      showMsg('تم تحديث الدور ✓', true);
+    });
+
+    // إزالة عضو (دالة خادم)
+    $('members-list').addEventListener('click', async (e) => {
+      const btn = (e.target as HTMLElement).closest('[data-remove]') as HTMLButtonElement | null;
+      if (!btn) return;
+      const id = btn.getAttribute('data-remove')!;
+      if (!confirm('إزالة هذا العضو نهائيًا؟')) return;
+      btn.disabled = true;
+      const { data, error } = await sb.functions.invoke('admin-users', { body: { action: 'delete', id } });
+      if (error || (data && (data as any).error)) { showMsg('تعذّر الحذف: ' + (((data as any)?.error) || error?.message || ''), false); btn.disabled = false; return; }
+      showMsg('أُزيل العضو ✓', true);
+      await loadMembers();
+    });
+
+    // إضافة عضو (دالة خادم)
+    $('add-member')?.addEventListener('click', async () => {
+      const email = val('m-email'), password = val('m-pass'), full_name = val('m-name'), role = val('m-role');
+      if (!email || password.length < 6) { showMsg('أدخل بريدًا صحيحًا وكلمة سر (6 أحرف فأكثر).', false); return; }
+      const btn = $('add-member') as HTMLButtonElement;
+      btn.disabled = true; const prev = btn.textContent; btn.textContent = 'جارٍ الإضافة…';
+      const { data, error } = await sb.functions.invoke('admin-users', { body: { action: 'create', email, password, full_name, role } });
+      btn.disabled = false; btn.textContent = prev;
+      if (error || (data && (data as any).error)) { showMsg('تعذّر الإضافة: ' + (((data as any)?.error) || error?.message || 'تأكّد من نشر دالة admin-users.'), false); return; }
+      showMsg('أُضيف العضو ✓', true);
+      setVal('m-email', ''); setVal('m-pass', ''); setVal('m-name', '');
+      await loadMembers();
+    });
+
+    // ── حفظ الإعدادات ──
+    document.querySelectorAll<HTMLButtonElement>('[data-save]').forEach((btn) =>
+      btn.addEventListener('click', async () => {
+        const kind = btn.dataset.save;
+        btn.disabled = true; const prev = btn.textContent; btn.textContent = 'جارٍ الحفظ…';
+        try {
+          if (kind === 'general') { const r = await updateSettings({ site_name: val('g-site-name'), tagline: val('g-tagline') }); showMsg(r.ok ? 'حُفظ ✓' : r.message!, r.ok); }
+          else if (kind === 'telegram') { const r = await updateSettings({ telegram_url: val('tg-url') }); showMsg(r.ok ? 'حُفظ رابط تلجرام ✓ (يظهر فورًا)' : r.message!, r.ok); }
+          else if (kind === 'adsense') { const r = await updateSettings({ adsense_client: val('ad-client'), adsense_enabled: ($('ad-enabled') as HTMLInputElement).checked }); showMsg(r.ok ? 'حُفظ ✓ (يظهر بعد النشر)' : r.message!, r.ok); }
+          else if (kind === 'seo') { const r = await updateSettings({ seo_title: val('seo-title'), seo_description: val('seo-desc'), analytics_id: val('seo-analytics') }); showMsg(r.ok ? 'حُفظ ✓ (يظهر بعد النشر)' : r.message!, r.ok); }
+          else if (kind === 'account-name') {
+            const { data, error } = await sb.from('profiles').update({ full_name: val('acc-name') }).eq('id', me.id).select('id');
+            showMsg(error || !data?.length ? 'تعذّر حفظ الاسم.' : 'حُفظ الاسم ✓', !!(data && data.length));
+          } else if (kind === 'account-pass') {
+            const pass = val('acc-pass');
+            if (pass.length < 6) { showMsg('كلمة السر 6 أحرف على الأقل.', false); }
+            else { const { error } = await sb.auth.updateUser({ password: pass }); showMsg(error ? 'تعذّر التحديث: ' + error.message : 'حُدّثت كلمة المرور ✓', !error); if (!error) setVal('acc-pass', ''); }
+          }
+        } finally { btn.disabled = false; btn.textContent = prev; }
       })
     );
+
+    init();
   </script>
 </AdminLayout>

@@ -1,6 +1,7 @@
 ---
 import 'bootstrap/dist/css/bootstrap.rtl.min.css';
 import '../styles/theme.css';
+import { getSettings } from '../lib/settings';
 
 interface Props {
   title?: string;
@@ -8,12 +9,17 @@ interface Props {
   image?: string;
   type?: 'website' | 'article';
 }
-const {
-  title = 'خزعبلات — كل خزعبلة لها قصة',
-  description = 'خزعبلات — نفحص الخرافات والأساطير والطرائف الشعبية تحت الضوء ونقول لك الحقيقة بمقياس الخزعبلة، وأنت تضحك في الطريق.',
-  image = '/og-default.png',
-  type = 'website',
-} = Astro.props;
+const { title, description, image = '/og-default.png', type = 'website' } = Astro.props;
+
+// إعدادات الموقع (وقت البناء) — عنوان/وصف افتراضيان + AdSense + تحليلات.
+const settings = await getSettings();
+const pageTitle = title || settings.seo_title || 'خزعبلات — كل خزعبلة لها قصة';
+const pageDesc =
+  description ||
+  settings.seo_description ||
+  'خزعبلات — نفحص الخرافات والأساطير والطرائف الشعبية تحت الضوء ونقول لك الحقيقة بمقياس الخزعبلة، وأنت تضحك في الطريق.';
+const adsenseOn = settings.adsense_enabled && settings.adsense_client.startsWith('ca-pub-');
+const analyticsId = settings.analytics_id.trim();
 
 const canonicalURL = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : Astro.url.pathname;
 const ogImage = Astro.site ? new URL(image, Astro.site).href : image;
@@ -23,23 +29,23 @@ const ogImage = Astro.site ? new URL(image, Astro.site).href : image;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
-    <meta name="description" content={description} />
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDesc} />
     <link rel="canonical" href={canonicalURL} />
 
     <!-- Open Graph -->
     <meta property="og:type" content={type} />
     <meta property="og:site_name" content="خزعبلات" />
     <meta property="og:locale" content="ar_AR" />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDesc} />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:image" content={ogImage} />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDesc} />
     <meta name="twitter:image" content={ogImage} />
 
     <!-- RSS -->
@@ -62,6 +68,19 @@ const ogImage = Astro.site ? new URL(image, Astro.site).href : image;
           y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
       })(window, document, "clarity", "script", "y1rdjy8hqd");
     </script>
+
+    <!-- Google AdSense (من الإعدادات) -->
+    {adsenseOn && (
+      <script is:inline async src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${settings.adsense_client}`} crossorigin="anonymous"></script>
+    )}
+
+    <!-- Google Analytics (من الإعدادات) -->
+    {analyticsId && (
+      <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${analyticsId}`}></script>
+    )}
+    {analyticsId && (
+      <script is:inline set:html={`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${analyticsId}');`}></script>
+    )}
   </head>
   <body>
     <slot />
@@ -81,6 +100,17 @@ const ogImage = Astro.site ? new URL(image, Astro.site).href : image;
       } else {
         els.forEach((el) => el.classList.add('is-visible'));
       }
+    </script>
+    <script>
+      // رابط تلجرام لحظي: نقرأ آخر قيمة من القاعدة ونحدّث كل [data-tg-link] بلا إعادة نشر.
+      import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../lib/public-env';
+      fetch(`${SUPABASE_URL}/rest/v1/site_settings?id=eq.1&select=telegram_url`, { headers: { apikey: SUPABASE_ANON_KEY } })
+        .then((r) => (r.ok ? r.json() : []))
+        .then((rows) => {
+          const url = Array.isArray(rows) && rows[0] && rows[0].telegram_url;
+          if (url) document.querySelectorAll('[data-tg-link]').forEach((a) => a.setAttribute('href', url));
+        })
+        .catch(() => {});
     </script>
   </body>
 </html>

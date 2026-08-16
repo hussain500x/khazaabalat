@@ -26,7 +26,7 @@ const isActive = (h: string) => path === h;
       <a href="/search" class="btn rounded-circle d-inline-grid" style="width:40px;height:40px;place-items:center;background:var(--night-700);border:1px solid var(--border-subtle)" aria-label="بحث">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--parch-300)" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4" stroke-linecap="round"/></svg>
       </a>
-      <a class="btn btn-tg rounded-pill px-3 py-2 d-none d-md-inline-flex align-items-center gap-2" href={TELEGRAM_URL} target="_blank" rel="noopener">
+      <a class="btn btn-tg rounded-pill px-3 py-2 d-none d-md-inline-flex align-items-center gap-2" href={TELEGRAM_URL} target="_blank" rel="noopener" data-tg-link>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M22 3 L2 11 L9 13 L11 20 L14 16 L18 19 Z"/></svg>
         تلجرام
       </a>
@@ -40,7 +40,7 @@ const isActive = (h: string) => path === h;
   <nav class="mobile-menu d-md-none" id="mobileMenu">
     <div class="container-ka">
       {nav.map((c) => <a class:list={[{ active: isActive(c.h) }]} href={c.h}>{c.t}</a>)}
-      <a href={TELEGRAM_URL} target="_blank" rel="noopener" style="color:var(--tg)">تلجرام — انضم للقناة</a>
+      <a href={TELEGRAM_URL} target="_blank" rel="noopener" style="color:var(--tg)" data-tg-link>تلجرام — انضم للقناة</a>
     </div>
   </nav>
 </header>
