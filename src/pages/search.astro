@@ -3,10 +3,10 @@ import Base from '../layouts/Base.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import ArticleCard from '../components/ArticleCard.astro';
-import { articles } from '../data/site';
+import { getPublishedArticles } from '../lib/articles';
 
-const popular = ['العين', 'أم الدويس', 'الرقم 4', 'امسك الخشب', 'السعلوة', 'الحسد'];
-const query = 'العين';
+const popular = ['العين', 'أم الدويس', 'الرقم 4', 'الحسد'];
+const all = await getPublishedArticles();
 ---
 <Base title="بحث | خزعبلات" description="ابحث في خزعبلات — جِد الخرافات والأساطير والطرائف وغرائب العالم التي تبحث عنها.">
   <Header />
@@ -16,17 +16,17 @@ const query = 'العين';
       <h1 class="font-display" style="font-size:clamp(32px,5vw,48px);color:var(--parch-50)">ابحث في الخزعبلات</h1>
       <p class="text-secondary-ka mt-2">دوّر عن خرافة، حكاية، أو غريبة — واكتشف الحقيقة وراها.</p>
 
-      <form class="mt-4" onsubmit="return false">
+      <form id="search-form" class="mt-4">
         <div class="d-flex align-items-center gap-2 px-3" style="background:var(--night-700);border:1px solid var(--border-strong);border-radius:14px;height:60px">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lantern-500)" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4" stroke-linecap="round"/></svg>
-          <input type="search" value={query} placeholder="اكتب كلمة البحث…" class="flex-grow-1" style="background:transparent;border:none;outline:none;color:var(--parch-50);font-family:var(--font-body);font-size:17px" />
+          <input id="q" name="q" type="search" autocomplete="off" aria-label="ابحث في الخزعبلات" placeholder="اكتب كلمة البحث…" class="flex-grow-1" style="background:transparent;border:none;outline:none;color:var(--parch-50);font-family:var(--font-body);font-size:17px" />
         </div>
       </form>
 
       <div class="d-flex flex-wrap gap-2 justify-content-center mt-3">
         <span class="text-muted-ka" style="font-size:13px;align-self:center">بحث شائع:</span>
         {popular.map((p) => (
-          <a href="/search" class="rounded-pill px-3 py-1" style="background:var(--night-700);border:1px solid var(--border-subtle);color:var(--text-secondary);font-family:var(--font-heading);font-weight:500;font-size:13px;text-decoration:none">{p}</a>
+          <a href={`/search?q=${encodeURIComponent(p)}`} class="rounded-pill px-3 py-1" style="background:var(--night-700);border:1px solid var(--border-subtle);color:var(--text-secondary);font-family:var(--font-heading);font-weight:500;font-size:13px;text-decoration:none">{p}</a>
         ))}
       </div>
     </div>
@@ -34,19 +34,67 @@ const query = 'العين';
     <!-- النتائج -->
     <div class="d-flex justify-content-between align-items-center mt-5 mb-4 text-start" data-reveal>
       <a href="/articles" class="text-accent" style="font-family:var(--font-heading);font-weight:600">تصفّح الأرشيف ›</a>
-      <h2 style="font-size:22px;margin:0">نتائج عن «{query}» <span class="text-muted-ka" style="font-size:16px">(3)</span></h2>
+      <h2 style="font-size:22px;margin:0"><span id="q-label">كل الخزعبلات</span> <span class="text-muted-ka" id="result-count" style="font-size:16px"></span></h2>
     </div>
-    <div class="row g-4">
-      {articles.map((a, i) => (
-        <div class="col-12 col-md-6 col-lg-4" data-reveal style={`--reveal-delay:${i * 0.1}s`}><ArticleCard a={a} /></div>
+    <div class="row g-4" id="results">
+      {all.map((a, i) => (
+        <div class="col-12 col-md-6 col-lg-4 result-item" data-search={`${a.title} ${a.dek} ${a.tags.join(' ')} ${a.cat}`} data-reveal style={`--reveal-delay:${i * 0.1}s`}>
+          <ArticleCard a={a} />
+        </div>
       ))}
     </div>
 
-    <!-- حالة فارغة (مرجعية) -->
-    <div class="text-center mt-5 pt-4" style="border-top:1px dashed var(--border-subtle)">
-      <p class="text-muted-ka mb-0" style="font-size:14px">مثال على نتيجة فارغة: «ما لقينا ولا خزعبلة بهذا الاسم… جرّب كلمة ثانية.» 😅</p>
+    <!-- حالة فارغة -->
+    <div id="empty" class="text-center mt-5 pt-4" style="display:none;border-top:1px dashed var(--border-subtle)">
+      <p class="text-muted-ka mb-0" style="font-size:15px">ما لقينا ولا خزعبلة بهذا الاسم… جرّب كلمة ثانية. 😅</p>
     </div>
+    {all.length === 0 && (
+      <div class="text-center mt-5 pt-4" style="border-top:1px dashed var(--border-subtle)">
+        <p class="text-muted-ka mb-0" style="font-size:15px">لا توجد مقالات منشورة بعد.</p>
+      </div>
+    )}
   </section>
 
   <Footer />
 </Base>
+
+<script>
+  const input = document.getElementById('q') as HTMLInputElement | null;
+  const form = document.getElementById('search-form') as HTMLFormElement | null;
+  const items = Array.from(document.querySelectorAll<HTMLElement>('.result-item'));
+  const countEl = document.getElementById('result-count');
+  const qLabel = document.getElementById('q-label');
+  const emptyEl = document.getElementById('empty');
+
+  // تطبيع عربي: توحيد الألف والياء والتاء المربوطة وإزالة التشكيل لتحسين المطابقة.
+  const norm = (s: string) => s.toLowerCase()
+    .replace(/[ً-ْ]/g, '')
+    .replace(/[أإآ]/g, 'ا').replace(/ى/g, 'ي').replace(/ة/g, 'ه')
+    .replace(/\s+/g, ' ').trim();
+
+  const apply = (q: string) => {
+    const nq = norm(q);
+    let shown = 0;
+    for (const it of items) {
+      const match = !nq || norm(it.dataset.search || '').includes(nq);
+      it.style.display = match ? '' : 'none';
+      if (match) shown++;
+    }
+    if (countEl) countEl.textContent = items.length ? `(${shown})` : '';
+    if (qLabel) qLabel.textContent = nq ? `نتائج عن «${q.trim()}»` : 'كل الخزعبلات';
+    if (emptyEl) emptyEl.style.display = nq && shown === 0 ? 'block' : 'none';
+  };
+
+  const syncUrl = (q: string) => {
+    const url = new URL(location.href);
+    if (q.trim()) url.searchParams.set('q', q.trim()); else url.searchParams.delete('q');
+    history.replaceState(null, '', url);
+  };
+
+  input?.addEventListener('input', () => { apply(input.value); syncUrl(input.value); });
+  form?.addEventListener('submit', (e) => { e.preventDefault(); if (input) { apply(input.value); syncUrl(input.value); } });
+
+  const initial = new URLSearchParams(location.search).get('q') || '';
+  if (input) input.value = initial;
+  apply(initial);
+</script>
