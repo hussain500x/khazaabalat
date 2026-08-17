@@ -2,7 +2,7 @@
 // النشر (مرة واحدة):  supabase functions deploy admin-users
 // المفاتيح (SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY) تُحقن تلقائيًا.
 // الأمان: نتحقّق أن المتصل مسجّل الدخول ودورُه «مالك» قبل أي عملية.
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
